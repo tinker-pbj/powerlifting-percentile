@@ -47,19 +47,20 @@ for sex, (lo, hi) in BW_RANGE.items():
         g1 = math.ceil(np.quantile(x, 0.99995) / STEP) * STEP + 4 * STEP
         grid = np.arange(g0, g1 + STEP / 2, STEP)
         left = np.searchsorted(x, grid, 'left'); right = np.searchsorted(x, grid, 'right')
-        rows = []
+        rows = []; hs = []; near = []
         for b in bw_grid:
             h = H
             while True:
                 w = np.exp(-0.5 * ((lbw - math.log(b)) / h) ** 2)
                 if w.sum() ** 2 / (w ** 2).sum() >= MIN_EFF or h > 0.3: break
                 h *= 1.15
+            hs.append(round(h, 4)); near.append(int((np.abs(lbw - math.log(b)) <= 1.5 * h).sum()))
             cw = np.concatenate([[0.0], np.cumsum(w)]); tot = cw[-1]
             p = (cw[left] + 0.5 * (cw[right] - cw[left])) / tot          # tie-aware CDF at each grid lift
             q = np.round(p * 10000).astype(int)                          # hundredths of a percent
             q = np.maximum.accumulate(q)
             rows.append([int(q[0])] + np.diff(q).tolist())
-        out["data"][sex]["lifts"][lift] = {"x0": g0, "n": len(grid), "rows": rows}
+        out["data"][sex]["lifts"][lift] = {"x0": g0, "n": len(grid), "rows": rows, "h": hs, "near": near}
         print(sex, lift, len(x), "grid", g0, g1, len(grid), file=sys.stderr)
 
 json.dump(out, open('docs/data.json', 'w'), separators=(',', ':'))

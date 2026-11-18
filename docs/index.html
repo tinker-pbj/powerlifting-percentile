@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Powerlifting Percentile: how strong are you for your bodyweight?</title>
+<title>Strength Percentile: how strong are you for your bodyweight?</title>
 <meta name="description" content="Your squat, bench, deadlift and total as a percentile of raw, drug-tested powerlifters at your bodyweight. 340,000 lifters from OpenPowerlifting.">
-<meta property="og:title" content="Powerlifting Percentile">
+<meta property="og:title" content="Strength Percentile">
 <meta property="og:description" content="How your lifts rank among raw, drug-tested powerlifters at your bodyweight.">
 <meta name="theme-color" content="#f5f2ec">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23d4452f'/%3E%3Crect x='5' y='10' width='4' height='12' rx='1' fill='%23fff'/%3E%3Crect x='23' y='10' width='4' height='12' rx='1' fill='%23fff'/%3E%3Crect x='9' y='14.5' width='14' height='3' fill='%23fff'/%3E%3C/svg%3E">
@@ -47,8 +47,17 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
 .in input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accbg)}
 .in input::placeholder{color:var(--mut);font-weight:400}
 .in span{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:.85rem;pointer-events:none}
-.share{margin-top:14px;width:100%;font:inherit;font-weight:600;font-size:.9rem;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
-.share:hover{background:var(--soft)}
+.herohead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.muted{color:var(--mut);font-size:.8rem}
+.share{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:.85rem;padding:7px 13px;flex:0 0 auto;border-radius:99px;border:0;background:var(--ink);color:var(--bg);cursor:pointer}
+.share:hover{opacity:.88}
+.cardfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 26px 18px;border-top:1px solid var(--line)}
+.site{font-weight:800;letter-spacing:-.01em;color:var(--mut);font-size:.95rem}
+.who{display:flex;align-items:center;gap:14px;margin:4px 26px 2px;padding:10px 14px;background:var(--soft);border-radius:12px;font-size:.88rem;color:var(--mut)}
+.who b{color:var(--ink)}
+.who svg{flex:0 0 112px;width:112px;height:auto}
+.who:empty{display:none}
+@media (max-width:480px){.who{margin:4px 18px 2px}.who svg{flex-basis:84px;width:84px}.cardfoot{padding:12px 18px 16px}}
 .hero{padding:26px 26px 8px}
 .kicker{color:var(--mut);font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .big{display:flex;align-items:baseline;gap:6px;margin:4px 0 2px}
@@ -76,8 +85,9 @@ svg{display:block;width:100%;height:auto}
 .next b{color:var(--ink);font-weight:700}
 .lift.sel .nm{color:var(--acc)}
 .empty{color:var(--mut);padding:30px 26px}
-.method{margin-top:20px;padding:22px 26px;color:var(--mut);font-size:.92rem}
-.method h2{color:var(--ink);font-size:1rem;margin:0 0 6px}
+.method{display:block;margin-top:20px;padding:18px 26px;color:var(--mut);font-size:.92rem}
+.method summary{color:var(--ink);font-weight:700;cursor:pointer;list-style-position:inside}
+.method[open] summary{margin-bottom:6px}
 .method code{display:block;background:var(--soft);color:var(--ink);border-radius:10px;padding:12px 14px;margin:10px 0;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-x:auto;white-space:pre}
 .method p{margin:8px 0}
 .method a{color:inherit}
@@ -90,8 +100,8 @@ footer a{color:inherit}
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><i></i>Powerlifting Percentile</div>
-    <div class="tag">Raw · drug-tested · at your bodyweight</div>
+    <div class="brand"><i></i>Strength Percentile</div>
+    <div class="tag">Powerlifting percentiles · raw · drug-tested · at your bodyweight</div>
   </header>
 
   <div class="grid">
@@ -103,30 +113,31 @@ footer a{color:inherit}
       <div class="field"><label for="bench">Bench</label><div class="in"><input id="bench" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
       <div class="field"><label for="deadlift">Deadlift</label><div class="in"><input id="deadlift" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
       <div class="field"><label for="total">Total<small id="totnote">sum of your three lifts</small></label><div class="in"><input id="total" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
-      <button class="share" id="share">Copy link to these numbers</button>
     </section>
 
     <section class="card" aria-live="polite">
       <div class="hero">
-        <div class="kicker" id="kicker">Total</div>
+        <div class="herohead"><div class="kicker" id="kicker">Total</div><button class="share" id="share"><svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M10 2.5v10M6 6.5l4-4 4 4M4 11v5.5h12V11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Share</button></div>
         <div class="big"><b id="bigN">–</b><sup id="bigS"></sup></div>
         <p class="line" id="line">Enter your bodyweight and lifts.</p>
         <div class="tabs" id="tabs"><button data-v="total" class="on">Total</button><button data-v="squat">Squat</button><button data-v="bench">Bench</button><button data-v="deadlift">Deadlift</button></div>
       </div>
-      <div class="chart"><svg id="chart" viewBox="0 0 640 230" role="img" aria-label="Distribution of lifts at your bodyweight"></svg></div>
+      <div class="chart"><svg id="chart" viewBox="0 0 640 250" role="img" aria-label="Distribution of lifts at your bodyweight"></svg></div>
+      <div class="who" id="who"></div>
       <div class="lifts" id="lifts"></div>
+      <div class="cardfoot"><span class="site">strengthpercentile.com</span><span class="muted">raw · drug-tested · OpenPowerlifting data</span></div>
     </section>
   </div>
 
-  <section class="card method">
-    <h2>How it's calculated</h2>
+  <details class="card method">
+    <summary>How it's calculated</summary>
     <p><b>Who you're compared with:</b> every lifter in <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> who competed <b>raw</b> (no wraps, suits or shirts) in a <b>drug-tested</b> full-power meet, aged 16+ (or age unknown), not disqualified. Each lifter counts <b>once, at their best ever</b> for that lift, with the bodyweight from that meet: <span id="nM">230,000</span> men and <span id="nF">110,000</span> women.</p>
     <p><b>Your percentile</b> is the share of those lifters whose best is below yours, with lifters near your bodyweight counting most:</p>
     <code>P(x, b) = Σ wᵢ · [liftᵢ &lt; x] / Σ wᵢ
 wᵢ = exp(−½ · ((ln bwᵢ − ln b) / 0.035)²)</code>
     <p>The weight is a bell curve on <i>log</i> bodyweight, about ±3.5% wide, so "near" scales with you (±2 kg at 60 kg, ±4 kg at 120 kg) and there are no weight-class jumps. Where data is thin, the window widens until at least 1,500 lifters effectively count. Lifts tied with yours count half. Tested against held-out lifters, the predicted percentiles come true to within about one point.</p>
     <p>This ranks you among <i>people who compete</i>, a strong crowd. Among gym-goers in general you'd rank higher. Past the 99.99th percentile there are only a handful of people, so the page stops there.</p>
-  </section>
+  </details>
   <footer>Data: <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> (public domain), meets through <span id="snap">2026</span>. Not affiliated with OpenPowerlifting. · <a href="https://github.com/tinker-pbj/powerlifting-percentile">Source</a></footer>
 </div>
 <div class="toast" id="toast">Link copied</div>
@@ -180,7 +191,11 @@ let totalManual = false;
   if (id === 'total') totalManual = $('total').value !== ''; persist(); render(); }));
 $('lifts').addEventListener('click', (e) => { const r = e.target.closest('.lift'); if (!r) return; tab = r.dataset.v;
   [...$('tabs').children].forEach((c) => c.classList.toggle('on', c.dataset.v === tab)); render(); });
-$('share').addEventListener('click', async () => { persist(); try { await navigator.clipboard.writeText(location.href); } catch {}
+$('share').addEventListener('click', async () => { persist(); const url = location.href;
+  const r = val('bw') && val('total') && D ? pAt(curve('total', toKg(val('bw'))), toKg(val('total'))) : null;
+  const text = r != null ? `My powerlifting total is in the ${fmtP(r).n} percentile of raw, tested lifters at my bodyweight.` : 'How strong are you for your bodyweight?';
+  if (navigator.share && matchMedia('(pointer:coarse)').matches) { try { await navigator.share({ title: 'Strength Percentile', text, url }); return; } catch {} }
+  try { await navigator.clipboard.writeText(url); } catch {}
   const t = $('toast'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1400); });
 
 function render() {
@@ -198,6 +213,7 @@ function render() {
   else { $('bigN').textContent = '–'; $('bigS').textContent = '';
     $('line').textContent = !bw ? 'Enter your bodyweight and lifts.' : `Enter your ${tab === 'total' ? 'three lifts (or a total)' : tab} to see where you stand.`; }
   drawChart(bw, res[tab], tab);
+  drawWho(bw, tab);
   // lift rows
   let html = '';
   for (const l of LIFTS) { const r = res[l], x = val(l);
@@ -214,7 +230,7 @@ function render() {
 }
 
 function drawChart(bw, r, lift) {
-  const svg = $('chart'), W = 640, Hh = 230, pl = 14, pr = 14, pt = 34, pb = 30;
+  const svg = $("chart"), W = 640, Hh = 250, pl = 14, pr = 14, pt = 34, pb = 48;
   if (!bw) { svg.innerHTML = `<text x="${W/2}" y="${Hh/2}" text-anchor="middle" class="axis">Your bodyweight sets the comparison group</text>`; return; }
   const cv = r ? r.cv : curve(lift, bw), c = cv.c, n = c.length;
   // density from the CDF, lightly smoothed (lifters like round numbers)
@@ -247,7 +263,21 @@ function drawChart(bw, r, lift) {
     g += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5.5" fill="var(--acc)" stroke="var(--card)" stroke-width="2.5"/>`;
     const anchor = px > W - 70 ? 'end' : px < 70 ? 'start' : 'middle';
     g += `<text x="${px.toFixed(1)}" y="${Math.max(pt + 14, py - 12).toFixed(1)}" text-anchor="${anchor}" style="font-weight:800;font-size:13px" fill="var(--acc)">You</text>`; }
+  g += `<text x="${W - pr}" y="${Hh - 2}" text-anchor="end" class="axis" style="font-weight:800;opacity:.75">strengthpercentile.com</text>`;
   svg.innerHTML = g;
+}
+
+function drawWho(bw, lift) {
+  if (!bw) { $('who').innerHTML = ''; return; }
+  const S = D.data[sex], L = S.lifts[lift], i = Math.log(bw / S.bw0) / D.meta.bw_step_log;
+  const k = Math.max(0, Math.min(S.nbw - 1, Math.round(i))), h = L.h[k], near = L.near[k];
+  const lo = bw * Math.exp(-1.5 * h), hi = bw * Math.exp(1.5 * h), r = (v) => Math.round(fromKg(v));
+  // little bell curve: how much each bodyweight counts
+  let p = ''; for (let j = 0; j <= 40; j++) { const z = -2.6 + 5.2 * j / 40, x = 4 + 104 * j / 40, y = 36 - 28 * Math.exp(-0.5 * z * z); p += (j ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
+  const xl = 4 + 104 * (1.1 / 5.2), xh = 4 + 104 * (4.1 / 5.2);
+  $('who').innerHTML = `<svg viewBox="0 0 112 50" aria-hidden="true"><path d="${p}L108,36L4,36Z" fill="var(--acc2)" opacity=".55"/><path d="${p}" fill="none" stroke="var(--acc)" stroke-width="1.6"/><line x1="56" x2="56" y1="6" y2="36" stroke="var(--acc)" stroke-width="1.2" stroke-dasharray="2 2"/>
+    <text x="${xl}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(lo)}</text><text x="56" y="47" text-anchor="middle" class="axis" style="font-size:9px;font-weight:700">${r(bw)}</text><text x="${xh}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(hi)}</text></svg>
+    <span>Compared with <b>${near.toLocaleString()} ${sex === 'M' ? 'men' : 'women'}</b> who weighed <b>${r(lo)}–${r(hi)} ${unit}</b>. The closer someone was to your ${r(bw)} ${unit}, the more they count.</span>`;
 }
 
 // ---- state in the URL (shareable) and localStorage
