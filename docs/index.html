@@ -229,9 +229,7 @@ $('lifts').addEventListener('click', (e) => { const r = e.target.closest('.lift'
   [...$('tabs').children].forEach((c) => c.classList.toggle('on', c.dataset.v === tab)); render(); });
 $('share').addEventListener('click', async () => {
   const url = shareUrl();
-  const r = val('bw') && val('total') && D ? pAt(curve('total', toKg(val('bw'))), toKg(val('total'))) : null;
-  const text = r != null ? `My ${SPORT[sport].noun} total is in the ${fmtP(r).n} percentile ${sport === 'pl' ? 'of raw, tested lifters' : 'of competitive weightlifters'} at my bodyweight.` : 'How strong are you for your bodyweight?';
-  if (navigator.share && matchMedia('(pointer:coarse)').matches) { try { await navigator.share({ title: 'Strength Percentile', text, url }); return; } catch {} }
+  if (navigator.share && matchMedia('(pointer:coarse)').matches) { try { await navigator.share({ url }); return; } catch {} }
   try { await navigator.clipboard.writeText(url); } catch {}
   const t = $('toast'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1400); });
 
