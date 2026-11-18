@@ -1,0 +1,32 @@
+name: Refresh data
+on:
+  schedule: [{ cron: "17 9 * * 1" }]   # Mondays 09:17 UTC
+  workflow_dispatch:
+permissions: { contents: write }
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install duckdb numpy
+      - name: Download OpenPowerlifting
+        run: |
+          curl -fsSL -o opl.zip https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip
+          unzip -q opl.zip && mv openpowerlifting-*/openpowerlifting-*.csv opl.csv
+      - run: python build.py opl.csv
+      - name: Sanity check
+        run: |
+          python - <<'PY'
+          import json; d = json.load(open('docs/data.json'))
+          n = d['meta']['lifters']
+          assert n['M_total'] > 150000 and n['F_total'] > 70000, n
+          print(n, d['meta']['latest_meet'])
+          PY
+      - name: Commit if changed
+        run: |
+          git diff --quiet docs/data.json && { echo "no change"; exit 0; }
+          git config user.name "Tinker (bot)"; git config user.email "tinker@prestonbjensen.com"
+          git add docs/data.json && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push
