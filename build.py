@@ -1,42 +1,65 @@
 """Build percentile tables from OpenPowerlifting: raw, drug-tested, full-power (SBD) meets.
-Per lifter, keep their best result for each lift (with the bodyweight they weighed at that meet).
-Percentile at bodyweight b = kernel-weighted share of lifters whose best is below X, with Gaussian weights on log-bodyweight."""
-import duckdb, numpy as np, json, sys
-con = duckdb.connect(); con.execute("SET memory_limit='1500MB'")
+
+Population: lifters aged 16+ (or unknown), not disqualified. Each lifter counts once per lift, at their best
+result for that lift, with the bodyweight they weighed at that meet.
+
+Percentile of lift x at bodyweight b:
+    P(x, b) = (Σ wᵢ·[liftᵢ < x] + ½·Σ wᵢ·[liftᵢ = x]) / Σ wᵢ
+    wᵢ = exp(−½ · ((ln bwᵢ − ln b) / h)²),  h = 0.035, widened ×1.15 until the Kish effective n ≥ 1500.
+
+Output (docs/data.json): for each sex and lift, P on a grid of lifts (every 2.5 kg) for a log-spaced grid of
+bodyweights (every 1.5%), in hundredths of a percent, delta-encoded along the lift axis. The page interpolates
+linearly in lift and in log bodyweight.
+
+Usage: python build.py path/to/openpowerlifting.csv
+"""
+import duckdb, numpy as np, json, sys, math
+
 CSV = sys.argv[1] if len(sys.argv) > 1 else 'opl.csv'
-src = f"""(SELECT Name, Sex, Event, Equipment, Age, BodyweightKg AS bw, Best3SquatKg AS sq, Best3BenchKg AS bp,
-  Best3DeadliftKg AS dl, TotalKg AS tot, Place, Tested='Yes' AS Tested, Date
-  FROM read_csv('{CSV}', header=true, all_varchar=true))"""
-base = f"""SELECT Name, Sex, bw::DOUBLE bw, sq::DOUBLE sq, bp::DOUBLE bp, dl::DOUBLE dl, tot::DOUBLE tot, Date FROM {src}
-  WHERE Equipment='Raw' AND Tested AND Event='SBD' AND Sex IN ('M','F')
-    AND bw::DOUBLE BETWEEN 30 AND 250 AND tot::DOUBLE > 0
-    AND Place NOT IN ('DQ','DD','NS','G')
-    AND (Age IS NULL OR Age::DOUBLE >= 16)"""
-LIFTS = {'total':'tot','squat':'sq','bench':'bp','deadlift':'dl'}
-P = np.concatenate([np.arange(1,99,1.0), np.arange(99,99.91,0.1)])  # percentiles to tabulate
-H = 0.035   # kernel width on ln(bodyweight): ~±3.5% bodyweight
-MIN_EFF = 1500  # widen the kernel where data is thin until this many effective lifters
-out = {"meta": {}, "p": [round(x,1) for x in P.tolist()], "tables": {}}
-for sex, (lo, hi) in {'F': (40, 150), 'M': (50, 200)}.items():
+H, MIN_EFF, STEP, BW_STEP = 0.035, 1500, 2.5, 0.015
+BW_RANGE = {'F': (40, 160), 'M': (50, 210)}
+LIFTS = {'total': 'tot', 'squat': 'sq', 'bench': 'bp', 'deadlift': 'dl'}
+
+con = duckdb.connect(); con.execute("SET memory_limit='1500MB'")
+con.execute(f"""CREATE TABLE base AS SELECT Name, Sex, BodyweightKg::DOUBLE bw, Best3SquatKg::DOUBLE sq,
+  Best3BenchKg::DOUBLE bp, Best3DeadliftKg::DOUBLE dl, TotalKg::DOUBLE tot, Date
+  FROM read_csv('{CSV}', header=true, all_varchar=true)
+  WHERE Equipment='Raw' AND Tested='Yes' AND Event='SBD' AND Sex IN ('M','F')
+    AND BodyweightKg::DOUBLE BETWEEN 30 AND 250 AND TotalKg::DOUBLE > 0
+    AND Place NOT IN ('DQ','DD','NS','G') AND (Age IS NULL OR Age::DOUBLE >= 16)""")
+snapshot = con.execute("SELECT max(Date) FROM base").fetchone()[0]
+
+out = {"meta": {"source": "OpenPowerlifting (public domain)", "latest_meet": str(snapshot), "h": H, "min_eff": MIN_EFF,
+                "lift_step": STEP, "bw_step_log": BW_STEP, "lifters": {}}, "data": {}}
+for sex, (lo, hi) in BW_RANGE.items():
+    n_bw = int(math.ceil(math.log(hi / lo) / BW_STEP)) + 1
+    bw_grid = lo * np.exp(BW_STEP * np.arange(n_bw))
+    out["data"][sex] = {"bw0": lo, "nbw": n_bw, "lifts": {}}
     for lift, col in LIFTS.items():
-        rows = con.execute(f"""SELECT bw, {col} FROM (
-            SELECT bw, {col}, row_number() OVER (PARTITION BY Name ORDER BY {col} DESC, Date) rn
-            FROM ({base}) WHERE Sex='{sex}' AND {col} > 0) WHERE rn=1""").fetchnumpy()
-        bw = np.log(rows['bw'].astype(float)); x = rows[col].astype(float)
-        order = np.argsort(x); x = x[order]; bw = bw[order]
-        grid = np.arange(lo, hi+1, 1.0); table = []; effs = []; hs = []
-        for b in grid:
+        r = con.execute(f"""SELECT bw, {col} FROM (SELECT bw, {col},
+              row_number() OVER (PARTITION BY Name ORDER BY {col} DESC, Date) rn FROM base WHERE Sex='{sex}' AND {col} > 0)
+            WHERE rn = 1""").fetchnumpy()
+        lbw = np.log(r['bw']); x = r[col]
+        o = np.argsort(x); x = x[o]; lbw = lbw[o]
+        out["meta"]["lifters"][f"{sex}_{lift}"] = int(len(x))
+        # common lift grid for this sex/lift: from the 0.01st to the 99.995th percentile of all lifters, padded
+        g0 = math.floor(np.quantile(x, 0.0001) / STEP) * STEP - STEP
+        g1 = math.ceil(np.quantile(x, 0.99995) / STEP) * STEP + 4 * STEP
+        grid = np.arange(g0, g1 + STEP / 2, STEP)
+        left = np.searchsorted(x, grid, 'left'); right = np.searchsorted(x, grid, 'right')
+        rows = []
+        for b in bw_grid:
             h = H
             while True:
-                w = np.exp(-0.5*((bw - np.log(b))/h)**2)
-                eff = w.sum()**2 / (w**2).sum()
-                if eff >= MIN_EFF or h > 0.3: break
+                w = np.exp(-0.5 * ((lbw - math.log(b)) / h) ** 2)
+                if w.sum() ** 2 / (w ** 2).sum() >= MIN_EFF or h > 0.3: break
                 h *= 1.15
-            cw = np.cumsum(w); cw /= cw[-1]
-            q = np.interp(P/100, cw, x)
-            table.append(np.round(q, 1).tolist()); effs.append(int(eff)); hs.append(round(h,3))
-        out["tables"][f"{sex}_{lift}"] = {"bw0": lo, "rows": table}
-        out["meta"][f"{sex}_{lift}"] = {"lifters": int(len(x)), "eff_min": min(effs), "h_max": max(hs)}
-        print(sex, lift, len(x), "eff range", min(effs), max(effs), "h max", max(hs), file=sys.stderr)
-out["meta"]["source"] = "OpenPowerlifting 2026-11-14 (public domain), raw + tested, SBD meets, best result per lifter"
-json.dump(out, open('docs/data.json','w'), separators=(',',':'))
+            cw = np.concatenate([[0.0], np.cumsum(w)]); tot = cw[-1]
+            p = (cw[left] + 0.5 * (cw[right] - cw[left])) / tot          # tie-aware CDF at each grid lift
+            q = np.round(p * 10000).astype(int)                          # hundredths of a percent
+            q = np.maximum.accumulate(q)
+            rows.append([int(q[0])] + np.diff(q).tolist())
+        out["data"][sex]["lifts"][lift] = {"x0": g0, "n": len(grid), "rows": rows}
+        print(sex, lift, len(x), "grid", g0, g1, len(grid), file=sys.stderr)
+
+json.dump(out, open('docs/data.json', 'w'), separators=(',', ':'))

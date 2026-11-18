@@ -15,7 +15,7 @@ Percentile of lift `x` at bodyweight `b`:
     wᵢ = exp(−½ · ((ln bwᵢ − ln b) / h)²),  h = 0.035
 
 `h` widens (×1.15 steps) wherever fewer than 1,500 lifters effectively count (Kish effective sample size).
-`build.py` tabulates the 1st–99.9th percentiles at every whole kilo; the page interpolates.
+`build.py` tabulates P on a 2.5 kg lift grid for bodyweights spaced 1.5% apart (in hundredths of a percent, so the page can show e.g. 99.87); the page interpolates in lift and log bodyweight. Ties count half.
 
 ## Rebuild
     curl -LO https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip   # unzip → opl.csv
