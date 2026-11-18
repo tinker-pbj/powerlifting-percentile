@@ -1,7 +1,7 @@
 """Olympic weightlifting tables from OpenWeightlifting (public domain), same method as build.py.
 
 Input: the flattened CSV from owl_normalize.py. Each lifter (federation + name + sex) counts once per lift, at their
-best result for that lift. Youth categories are left out. Output: docs/wl/data.json and docs/share/wl-all-{M,F}.json.
+best result for that lift. Youth categories are left out. Output: docs/wl/data.json.
 Usage: python build_wl.py owl.csv
 """
 import duckdb, numpy as np, json, sys, math, os
@@ -54,10 +54,5 @@ for sex, (lo, hi) in BW_RANGE.items():
         out["data"][sex]["lifts"][lift] = {"x0": g0, "n": len(grid), "rows": rows, "h": hs, "near": near}
         print('wl', sex, lift, len(x), 'grid', g0, g1, len(grid), file=sys.stderr)
 
-os.makedirs('docs/wl', exist_ok=True); os.makedirs('docs/share', exist_ok=True)
+os.makedirs('docs/wl', exist_ok=True)
 json.dump(out, open('docs/wl/data.json', 'w'), separators=(',', ':'))
-for sex, S in out["data"].items():
-    T = S["lifts"]["total"]
-    json.dump({"meta": {"bw_step_log": BW_STEP, "lift_step": STEP},
-               "data": {sex: {"bw0": S["bw0"], "nbw": S["nbw"], "lifts": {"total": {"x0": T["x0"], "n": T["n"], "rows": T["rows"]}}}}},
-              open(f'docs/share/wl-all-{sex}.json', 'w'), separators=(',', ':'))

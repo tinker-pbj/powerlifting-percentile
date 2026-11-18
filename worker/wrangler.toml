@@ -1,4 +1,0 @@
-# Local testing only (`npx wrangler dev`). Production is deployed by hand in the Cloudflare dashboard.
-name = "strengthpercentile-previews"
-main = "worker.js"
-compatibility_date = "2026-11-01"

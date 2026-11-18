@@ -78,10 +78,3 @@ for gkey, (glabel, amin, amax) in GROUPS.items():
             print(gkey, sex, lift, len(x), "grid", g0, g1, len(grid), "min_eff", min_eff, file=sys.stderr)
 
     json.dump(out, open('docs/data.json' if gkey == 'all' else f'docs/data-{gkey}.json', 'w'), separators=(',', ':'))
-    # slim per-sex totals for the share-preview Worker (it has a tight CPU budget)
-    os.makedirs('docs/share', exist_ok=True)
-    for sex, S in out["data"].items():
-        T = S["lifts"]["total"]
-        slim = {"meta": {"bw_step_log": BW_STEP, "lift_step": STEP},
-                "data": {sex: {"bw0": S["bw0"], "nbw": S["nbw"], "lifts": {"total": {"x0": T["x0"], "n": T["n"], "rows": T["rows"]}}}}}
-        json.dump(slim, open(f'docs/share/{gkey}-{sex}.json', 'w'), separators=(',', ':'))
