@@ -42,7 +42,10 @@ def kg(x): return f'{x:g}'
 def lb(x): return f'{round(x / LB / 5) * 5:,.0f}'
 
 CSS = """*{box-sizing:border-box}body{margin:0;background:#f3f3f3;color:#0b0b0b;font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.band{background:#0b0b0b;border-bottom:3px solid #e10b0b}.band a{display:block;max-width:900px;margin:0 auto;padding:14px 20px;color:#fff;text-decoration:none;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.band b{color:#e10b0b}
+.band{background:#0b0b0b;border-bottom:3px solid #e10b0b}.band header{max-width:900px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{color:#fff;text-decoration:none;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.brand b{color:#e10b0b}
+.nav{display:flex;gap:4px}.nav a{color:#bdbdbd;text-decoration:none;font-weight:700;font-size:.9rem;padding:7px 12px;border-radius:8px}.nav a:hover,.nav a.on{color:#fff;background:#222}
+@media (max-width:420px){.brand{font-size:.92rem}.nav a{padding:6px 8px;font-size:.85rem}}
 main{max-width:900px;margin:0 auto;padding:22px 20px 60px}h1{font-size:clamp(1.4rem,4vw,2rem);letter-spacing:-.02em;margin:6px 0 6px}h2{font-size:1.15rem;margin:28px 0 8px}
 p{max-width:70ch}.mut{color:#6e6e6e}a{color:#e10b0b}.crumb{font-size:.88rem;color:#6e6e6e}.crumb a{color:inherit}
 .card{background:#fff;border:1px solid #e3e3e3;border-radius:16px;padding:6px 18px 14px;margin:14px 0;overflow-x:auto}
@@ -56,7 +59,7 @@ def page(title, desc, path, body):
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title><meta name="description" content="{html.escape(desc)}"><link rel="canonical" href="{SITE}{path}">
 <meta property="og:title" content="{html.escape(title)}"><meta property="og:description" content="{html.escape(desc)}"><meta property="og:image" content="{SITE}/og.png"><meta name="twitter:card" content="summary_large_image">
-<style>{CSS}</style></head><body><div class="band"><a href="/">Strength <b>Percentile</b></a></div><main>{body}
+<style>{CSS}</style></head><body><div class="band"><header><a class="brand" href="/">Strength <b>Percentile</b></a><nav class="nav"><a href="/">Calculator</a><a href="/standards/" class="on">Standards</a></nav></header></div><main>{body}
 <footer>Data: <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> and <a href="https://www.openweightlifting.org">OpenWeightlifting</a> (public domain), refreshed weekly. Not affiliated with either. · <a href="/standards/">All strength standards</a> · <a href="/">Calculator</a></footer>
 </main><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{{"token": "472b7ce3b3a14314816f2c2c47df804c"}}'></script></body></html>"""
 

@@ -32,13 +32,18 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,
 header{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .brand{font-weight:900;letter-spacing:.04em;text-transform:uppercase;font-size:1.05rem;display:flex;align-items:center;gap:.35em}
 .brand b{color:var(--acc);font-weight:900}
-.tag{color:#a8a8a8;font-size:.85rem}
+.brand{color:#fff;text-decoration:none}
+.nav{display:flex;gap:4px}
+.nav a{color:#bdbdbd;text-decoration:none;font-weight:700;font-size:.9rem;padding:7px 12px;border-radius:8px}
+.nav a:hover{color:#fff;background:#222}
+.nav a.on{color:#fff;background:#222}
 .intro{margin:4px 2px 18px}
 .intro h1{font-size:clamp(1.35rem,3.6vw,1.9rem);font-weight:900;letter-spacing:-.02em;margin:0 0 4px}
 .intro p{margin:0;color:var(--mut);max-width:68ch;font-size:.95rem}
 .grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
 .grid>*{min-width:0}
-@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}.tag{display:none}}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.brand{font-size:.92rem}.nav a{padding:6px 8px;font-size:.85rem}}
 @media (max-width:480px){.wrap{padding:18px 12px 48px}.hero{padding:20px 18px 6px}.lifts{padding:4px 18px 16px}.inputs{padding:16px}
   .lift{grid-template-columns:78px 1fr 64px;gap:4px 12px}.method{padding:18px}.tabs button{padding:9px 8px}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
@@ -122,8 +127,8 @@ footer a{color:inherit}
 </head>
 <body>
 <div class="band"><header>
-    <div class="brand">Strength <b>Percentile</b></div>
-    <div class="tag">Powerlifting &amp; weightlifting percentiles · at your bodyweight</div>
+    <a class="brand" href="/">Strength <b>Percentile</b></a>
+    <nav class="nav"><a href="/" class="on">Calculator</a><a href="/standards/">Standards</a></nav>
   </header></div>
 <div class="wrap">
   <div class="intro"><h1>How strong are you for your bodyweight?</h1>
