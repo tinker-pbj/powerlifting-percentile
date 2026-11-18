@@ -204,7 +204,7 @@ function gl(sx, bw, t) { const [A, B, C] = sx === 'M' ? [1199.72839, 1025.18162,
 
 // ---- data access: P (0..100) for a lift x (kg) at bodyweight b (kg)
 const cache = new Map();
-function row(sx, lift, k) { const key = D.meta.group + sx + lift + k; let r = cache.get(key); if (r) return r;
+function row(sx, lift, k) { const key = D.meta.source + D.meta.group + sx + lift + k; let r = cache.get(key); if (r) return r;
   const d = D.data[sx].lifts[lift].rows[k]; r = new Float64Array(d.length); let s = 0;
   for (let i = 0; i < d.length; i++) { s += d[i]; r[i] = s / 100; } cache.set(key, r); return r; }
 function curve(lift, b) { // CDF over the lift grid at bodyweight b, interpolated in log bodyweight
