@@ -1,0 +1,27 @@
+# Strength Percentile
+
+> Free calculator at https://strengthpercentile.com that turns a lifter's numbers into a percentile among real competitors at the same bodyweight: squat, bench press, deadlift and total (raw, drug-tested powerlifting), or snatch, clean & jerk and total (Olympic weightlifting). Optional age groups for powerlifting. Also shows DOTS and IPF GL points.
+
+## Link someone straight to their result
+
+Build a URL with these query parameters (all optional except bodyweight and lifts):
+
+- `sp=wl` for weightlifting (omit for powerlifting)
+- `s=M` or `s=F` (sex)
+- `u=kg` or `u=lb` (units for every number)
+- `bw` bodyweight
+- powerlifting: `sq` squat, `be` bench, `de` deadlift (total is their sum), or `t` for a total only
+- weightlifting: `sn` snatch, `cj` clean & jerk
+- `a` age (powerlifting only; compares within 16–23, 24–39, 40–49, 50–59 or 60+)
+
+Example: https://strengthpercentile.com/?s=M&u=lb&bw=183&sq=405&be=275&de=500
+
+## Method
+
+Percentile of lift x at bodyweight b: P(x, b) = Σ wᵢ·[liftᵢ < x] / Σ wᵢ with wᵢ = exp(−½((ln bwᵢ − ln b)/0.035)²); ties count half; the window widens where data is thin (at least 1,500 effective lifters). Each lifter counts once, at their best result for that lift. Powerlifting population: raw, drug-tested, full-power (SBD) meets, age 16+, not disqualified. Held-out tests: predicted percentiles come true within about one point.
+
+## Data
+
+- Powerlifting: OpenPowerlifting (public domain). Weightlifting: OpenWeightlifting (public domain). Refreshed weekly.
+- Pre-computed tables (JSON): /data.json (all ages), /data-jr.json, /data-open.json, /data-m40.json, /data-m50.json, /data-m60.json, /wl/data.json. Format: for each sex and lift, a CDF over a lift grid (x0 + k·lift_step kg) for bodyweights bw0·exp(k·bw_step_log), in hundredths of a percent, delta-encoded per row.
+- Source code: https://github.com/tinker-pbj/powerlifting-percentile
