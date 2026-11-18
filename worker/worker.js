@@ -69,7 +69,7 @@ async function describe(q, origin) {
     image = `${SITE}/og/${sex}/top-${top}.png`;
   }
   return {
-    title: top ? `Top ${top}% for my bodyweight · Strength Percentile` : `${pct}th percentile for my bodyweight · Strength Percentile`,
+    title: top ? `Top ${top}% for my bodyweight · Strength Percentile` : 'How strong am I for my bodyweight? · Strength Percentile',
     description: `${fmt(totU).toLocaleString('en-US')} ${unit} total at ${fmt(bwU)} ${unit} bodyweight: stronger than ${pct}% of raw, drug-tested ${who}. How strong are you?`,
     image,
   };
