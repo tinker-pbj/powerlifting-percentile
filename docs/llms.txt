@@ -16,6 +16,10 @@ Build a URL with these query parameters (all optional except bodyweight and lift
 
 Example: https://strengthpercentile.com/?s=M&u=lb&bw=183&sq=405&be=275&de=500
 
+## Strength standards (static, no JavaScript)
+
+Percentile tables (10th–99th) for every weight class: https://strengthpercentile.com/standards/ (e.g. /standards/powerlifting/men/83kg/, /standards/weightlifting/women/63kg/).
+
 ## Method
 
 Percentile of lift x at bodyweight b: P(x, b) = Σ wᵢ·[liftᵢ < x] / Σ wᵢ with wᵢ = exp(−½((ln bwᵢ − ln b)/0.035)²); ties count half; the window widens where data is thin (at least 1,500 effective lifters). Each lifter counts once, at their best result for that lift. Powerlifting population: raw, drug-tested, full-power (SBD) meets, age 16+, not disqualified. Held-out tests: predicted percentiles come true within about one point.
