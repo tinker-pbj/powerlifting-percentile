@@ -27,6 +27,6 @@ jobs:
           PY
       - name: Commit if changed
         run: |
-          git diff --quiet docs/data.json && { echo "no change"; exit 0; }
+          git diff --quiet docs/ && { echo "no change"; exit 0; }
           git config user.name "Tinker (bot)"; git config user.email "tinker@prestonbjensen.com"
-          git add docs/data.json && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push
+          git add docs/data*.json && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push

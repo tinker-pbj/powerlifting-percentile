@@ -22,45 +22,59 @@ LIFTS = {'total': 'tot', 'squat': 'sq', 'bench': 'bp', 'deadlift': 'dl'}
 
 con = duckdb.connect(); con.execute("SET memory_limit='1500MB'")
 con.execute(f"""CREATE TABLE base AS SELECT Name, Sex, BodyweightKg::DOUBLE bw, Best3SquatKg::DOUBLE sq,
-  Best3BenchKg::DOUBLE bp, Best3DeadliftKg::DOUBLE dl, TotalKg::DOUBLE tot, Date
+  Best3BenchKg::DOUBLE bp, Best3DeadliftKg::DOUBLE dl, TotalKg::DOUBLE tot, Date,
+  -- age: exact if known, else the AgeClass range when it falls inside one group
+  COALESCE(Age::DOUBLE, CASE WHEN AgeClass IS NOT NULL THEN
+     CASE WHEN TRY_CAST(split_part(AgeClass,'-',2) AS DOUBLE) <= 23 THEN 20
+          WHEN TRY_CAST(split_part(AgeClass,'-',1) AS DOUBLE) >= 24 AND TRY_CAST(split_part(AgeClass,'-',2) AS DOUBLE) <= 39 THEN 30
+          WHEN TRY_CAST(split_part(AgeClass,'-',1) AS DOUBLE) >= 40 AND TRY_CAST(split_part(AgeClass,'-',2) AS DOUBLE) <= 49 THEN 45
+          WHEN TRY_CAST(split_part(AgeClass,'-',1) AS DOUBLE) >= 50 AND TRY_CAST(split_part(AgeClass,'-',2) AS DOUBLE) <= 59 THEN 55
+          WHEN TRY_CAST(split_part(AgeClass,'-',1) AS DOUBLE) >= 60 THEN 65 END END) AS age
   FROM read_csv('{CSV}', header=true, all_varchar=true)
   WHERE Equipment='Raw' AND Tested='Yes' AND Event='SBD' AND Sex IN ('M','F')
     AND BodyweightKg::DOUBLE BETWEEN 30 AND 250 AND TotalKg::DOUBLE > 0
-    AND Place NOT IN ('DQ','DD','NS','G') AND (Age IS NULL OR Age::DOUBLE >= 16)""")
+    AND Place NOT IN ('DQ','DD','NS','G') AND (Age IS NULL OR Age::DOUBLE >= 16)
+    AND NOT (Age IS NULL AND COALESCE(TRY_CAST(split_part(AgeClass,'-',2) AS DOUBLE), 99) < 16)""")
 snapshot = con.execute("SELECT max(Date) FROM base").fetchone()[0]
 
-out = {"meta": {"source": "OpenPowerlifting (public domain)", "latest_meet": str(snapshot), "h": H, "min_eff": MIN_EFF,
-                "lift_step": STEP, "bw_step_log": BW_STEP, "lifters": {}}, "data": {}}
-for sex, (lo, hi) in BW_RANGE.items():
-    n_bw = int(math.ceil(math.log(hi / lo) / BW_STEP)) + 1
-    bw_grid = lo * np.exp(BW_STEP * np.arange(n_bw))
-    out["data"][sex] = {"bw0": lo, "nbw": n_bw, "lifts": {}}
-    for lift, col in LIFTS.items():
-        r = con.execute(f"""SELECT bw, {col} FROM (SELECT bw, {col},
-              row_number() OVER (PARTITION BY Name ORDER BY {col} DESC, Date) rn FROM base WHERE Sex='{sex}' AND {col} > 0)
-            WHERE rn = 1""").fetchnumpy()
-        lbw = np.log(r['bw']); x = r[col]
-        o = np.argsort(x); x = x[o]; lbw = lbw[o]
-        out["meta"]["lifters"][f"{sex}_{lift}"] = int(len(x))
-        # common lift grid for this sex/lift: from the 0.01st percentile of all lifters to past the strongest one
-        g0 = math.floor(np.quantile(x, 0.0001) / STEP) * STEP - STEP
-        g1 = math.ceil(x.max() / STEP) * STEP + STEP   # past the strongest lifter: P reaches 100 at every bodyweight
-        grid = np.arange(g0, g1 + STEP / 2, STEP)
-        left = np.searchsorted(x, grid, 'left'); right = np.searchsorted(x, grid, 'right')
-        rows = []; hs = []; near = []
-        for b in bw_grid:
-            h = H
-            while True:
-                w = np.exp(-0.5 * ((lbw - math.log(b)) / h) ** 2)
-                if w.sum() ** 2 / (w ** 2).sum() >= MIN_EFF or h > 0.3: break
-                h *= 1.15
-            hs.append(round(h, 4)); near.append(int((np.abs(lbw - math.log(b)) <= 1.5 * h).sum()))
-            cw = np.concatenate([[0.0], np.cumsum(w)]); tot = cw[-1]
-            p = (cw[left] + 0.5 * (cw[right] - cw[left])) / tot          # tie-aware CDF at each grid lift
-            q = np.round(p * 10000).astype(int)                          # hundredths of a percent
-            q = np.maximum.accumulate(q)
-            rows.append([int(q[0])] + np.diff(q).tolist())
-        out["data"][sex]["lifts"][lift] = {"x0": g0, "n": len(grid), "rows": rows, "h": hs, "near": near}
-        print(sex, lift, len(x), "grid", g0, g1, len(grid), file=sys.stderr)
+GROUPS = {  # key: (label, min age, max age), None = everyone (age known or not)
+    'all': ('All ages', None, None), 'jr': ('16–23', 16, 23), 'open': ('24–39', 24, 39),
+    'm40': ('40–49', 40, 49), 'm50': ('50–59', 50, 59), 'm60': ('60+', 60, 200)}
+for gkey, (glabel, amin, amax) in GROUPS.items():
+    gwhere = '' if amin is None else f' AND age BETWEEN {amin} AND {amax + 0.999}'
+    out = {"meta": {"source": "OpenPowerlifting (public domain)", "latest_meet": str(snapshot), "h": H, "group": gkey, "group_label": glabel,
+                    "lift_step": STEP, "bw_step_log": BW_STEP, "lifters": {}}, "data": {}}
+    for sex, (lo, hi) in BW_RANGE.items():
+        n_bw = int(math.ceil(math.log(hi / lo) / BW_STEP)) + 1
+        bw_grid = lo * np.exp(BW_STEP * np.arange(n_bw))
+        out["data"][sex] = {"bw0": lo, "nbw": n_bw, "lifts": {}}
+        for lift, col in LIFTS.items():
+            r = con.execute(f"""SELECT bw, {col} FROM (SELECT bw, {col},
+                  row_number() OVER (PARTITION BY Name ORDER BY {col} DESC, Date) rn FROM base WHERE Sex='{sex}' AND {col} > 0{gwhere})
+                WHERE rn = 1""").fetchnumpy()
+            lbw = np.log(r['bw']); x = r[col]
+            min_eff = min(MIN_EFF, max(300, len(x) // 8))   # small groups (e.g. women 60+) get a smaller floor
+            o = np.argsort(x); x = x[o]; lbw = lbw[o]
+            out["meta"]["lifters"][f"{sex}_{lift}"] = int(len(x))
+            # common lift grid for this sex/lift: from the 0.01st percentile of all lifters to past the strongest one
+            g0 = math.floor(np.quantile(x, 0.0001) / STEP) * STEP - STEP
+            g1 = math.ceil(x.max() / STEP) * STEP + STEP   # past the strongest lifter: P reaches 100 at every bodyweight
+            grid = np.arange(g0, g1 + STEP / 2, STEP)
+            left = np.searchsorted(x, grid, 'left'); right = np.searchsorted(x, grid, 'right')
+            rows = []; hs = []; near = []
+            for b in bw_grid:
+                h = H
+                while True:
+                    w = np.exp(-0.5 * ((lbw - math.log(b)) / h) ** 2)
+                    if w.sum() ** 2 / (w ** 2).sum() >= min_eff or h > 0.3: break
+                    h *= 1.15
+                hs.append(round(h, 4)); near.append(int((np.abs(lbw - math.log(b)) <= 1.5 * h).sum()))
+                cw = np.concatenate([[0.0], np.cumsum(w)]); tot = cw[-1]
+                p = (cw[left] + 0.5 * (cw[right] - cw[left])) / tot          # tie-aware CDF at each grid lift
+                q = np.round(p * 10000).astype(int)                          # hundredths of a percent
+                q = np.maximum.accumulate(q)
+                rows.append([int(q[0])] + np.diff(q).tolist())
+            out["data"][sex]["lifts"][lift] = {"x0": g0, "n": len(grid), "rows": rows, "h": hs, "near": near}
+            print(gkey, sex, lift, len(x), "grid", g0, g1, len(grid), "min_eff", min_eff, file=sys.stderr)
 
-json.dump(out, open('docs/data.json', 'w'), separators=(',', ':'))
+    json.dump(out, open('docs/data.json' if gkey == 'all' else f'docs/data-{gkey}.json', 'w'), separators=(',', ':'))

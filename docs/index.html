@@ -72,7 +72,13 @@ header{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items
 .big sup{font-size:1.2rem;font-weight:700;color:var(--mut);letter-spacing:0}
 .line{font-size:1.08rem;margin:6px 0 0;max-width:46ch}
 .line em{font-style:normal;color:var(--acc);font-weight:800}
-.tabs{display:flex;gap:4px;margin:22px 0 0;border-bottom:1px solid var(--line)}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+.seg.small{display:inline-grid;margin:0;padding:2px;border-radius:9px}
+.seg.small button{font-size:.8rem;padding:5px 11px;border-radius:7px}
+.scores{display:flex;gap:6px;flex-wrap:wrap}
+.scores span{font-size:.8rem;font-weight:700;padding:5px 10px;border-radius:99px;background:var(--soft);font-variant-numeric:tabular-nums}
+.scores span i{font-style:normal;color:var(--mut);font-weight:600;margin-right:4px}
+.tabs{display:flex;gap:4px;margin:18px 0 0;border-bottom:1px solid var(--line)}
 .tabs button{font:inherit;font-weight:600;font-size:.92rem;border:0;background:none;color:var(--mut);padding:9px 12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tabs button.on{color:var(--ink);border-bottom-color:var(--acc)}
 .chart{padding:6px 10px 0 10px}
@@ -116,6 +122,7 @@ footer a{color:inherit}
       <div class="seg" id="sex"><button data-v="M" class="on">Men</button><button data-v="F">Women</button></div>
       <div class="seg" id="unit"><button data-v="kg" class="on">kg</button><button data-v="lb">lb</button></div>
       <div class="field"><label for="bw">Bodyweight</label><div class="in"><input id="bw" type="number" inputmode="decimal" min="0" step="0.1" placeholder="83"><span class="u"></span></div></div>
+      <div class="field"><label for="age">Age<small>optional</small></label><div class="in"><input id="age" type="number" inputmode="numeric" min="0" step="1" placeholder="–"><span>yrs</span></div></div>
       <div class="field"><label for="squat">Squat</label><div class="in"><input id="squat" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
       <div class="field"><label for="bench">Bench</label><div class="in"><input id="bench" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
       <div class="field"><label for="deadlift">Deadlift</label><div class="in"><input id="deadlift" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
@@ -127,6 +134,7 @@ footer a{color:inherit}
         <div class="herohead"><div class="kicker" id="kicker">Total</div><button class="share" id="share"><svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M10 2.5v10M6 6.5l4-4 4 4M4 11v5.5h12V11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Share</button></div>
         <div class="big"><b id="bigN">–</b><sup id="bigS"></sup></div>
         <p class="line" id="line">Enter your bodyweight and lifts.</p>
+        <div class="meta"><div class="seg small" id="cmp" hidden><button data-v="age" class="on" id="cmpAge">Age group</button><button data-v="all">All ages</button></div><div class="scores" id="scores"></div></div>
         <div class="tabs" id="tabs"><button data-v="total" class="on">Total</button><button data-v="squat">Squat</button><button data-v="bench">Bench</button><button data-v="deadlift">Deadlift</button></div>
       </div>
       <div class="chart"><svg id="chart" viewBox="0 0 640 250" role="img" aria-label="Distribution of lifts at your bodyweight"></svg></div>
@@ -143,6 +151,7 @@ footer a{color:inherit}
     <code>P(x, b) = Σ wᵢ · [liftᵢ &lt; x] / Σ wᵢ
 wᵢ = exp(−½ · ((ln bwᵢ − ln b) / 0.035)²)</code>
     <p>The weight is a bell curve on <i>log</i> bodyweight, about ±3.5% wide, so "near" scales with you (±2 kg at 60 kg, ±4 kg at 120 kg) and there are no weight-class jumps. Where data is thin, the window widens until at least 1,500 lifters effectively count. Lifts tied with yours count half. Tested against held-out lifters, the predicted percentiles come true to within about one point.</p>
+    <p><b>Age groups:</b> enter your age to compare only with lifters aged 16–23, 24–39, 40–49, 50–59 or 60+ (using their best result <i>within</i> that age range). Smaller groups (e.g. women 60+) need a wider bodyweight window. <b>DOTS</b> and <b>IPF GL</b> are the standard bodyweight-adjusted scores, computed exactly as OpenPowerlifting does.</p>
     <p>This ranks you among <i>people who compete</i>, a strong crowd. Among gym-goers in general you'd rank higher. Past the 99.99th percentile there are only a handful of people, so the page stops there.</p>
   </details>
   <footer>Data: <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> (public domain), meets through <span id="snap">2026</span>. Not affiliated with OpenPowerlifting. · <a href="https://github.com/tinker-pbj/powerlifting-percentile">Source</a></footer>
@@ -152,15 +161,26 @@ wᵢ = exp(−½ · ((ln bwᵢ − ln b) / 0.035)²)</code>
 <script>
 const LB = 0.45359237, LIFTS = ['total','squat','bench','deadlift'], NAMES = {total:'Total',squat:'Squat',bench:'Bench',deadlift:'Deadlift'};
 const MILESTONES = [25, 50, 75, 90, 95, 99, 99.9, 99.99];
-let D = null, sex = 'M', unit = 'kg', tab = 'total';
+let D = null, sex = 'M', unit = 'kg', tab = 'total', cmpAll = false;
+const DATA = {}, GROUPS = [['jr', 16, 23], ['open', 24, 39], ['m40', 40, 49], ['m50', 50, 59], ['m60', 60, 200]];
+const ageGroup = (a) => { if (!a || a < 16) return null; const g = GROUPS.find(([, lo, hi]) => a >= lo && a <= hi); return g ? g[0] : null; };
+function groupKey() { const g = ageGroup(val('age')); return g && !cmpAll ? g : 'all'; }
+function load(key) { if (DATA[key]) return Promise.resolve(DATA[key]); if (DATA['_p' + key]) return DATA['_p' + key];
+  return DATA['_p' + key] = fetch(key === 'all' ? 'data.json' : `data-${key}.json`, { cache: 'no-cache' }).then((r) => r.json()).then((d) => (DATA[key] = d)); }
 const $ = (id) => document.getElementById(id);
 const val = (id) => { const v = parseFloat($(id).value); return isFinite(v) && v > 0 ? v : null; };
 const toKg = (v) => unit === 'kg' ? v : v * LB, fromKg = (v) => unit === 'kg' ? v : v / LB;
 const stepU = () => unit === 'kg' ? 2.5 : 5;
 
+const DATA_LABEL = { jr: '16–23', open: '24–39', m40: '40–49', m50: '50–59', m60: '60+' };
+// DOTS and IPF GL (Classic) points, as OpenPowerlifting computes them
+function dots(sx, bw, t) { const [a, b, c, d, e] = sx === 'M' ? [-307.75076, 24.0900756, -0.1918759221, 0.0007391293, -0.000001093] : [-57.96288, 13.6175032, -0.1126655495, 0.0005158568, -0.0000010706];
+  const w = Math.min(Math.max(bw, 40), sx === 'M' ? 210 : 150); return t * 500 / (a + b*w + c*w**2 + d*w**3 + e*w**4); }
+function gl(sx, bw, t) { const [A, B, C] = sx === 'M' ? [1199.72839, 1025.18162, 0.00921] : [610.32796, 1045.59282, 0.03048]; return t * 100 / (A - B * Math.exp(-C * bw)); }
+
 // ---- data access: P (0..100) for a lift x (kg) at bodyweight b (kg)
 const cache = new Map();
-function row(sx, lift, k) { const key = sx + lift + k; let r = cache.get(key); if (r) return r;
+function row(sx, lift, k) { const key = D.meta.group + sx + lift + k; let r = cache.get(key); if (r) return r;
   const d = D.data[sx].lifts[lift].rows[k]; r = new Float64Array(d.length); let s = 0;
   for (let i = 0; i < d.length; i++) { s += d[i]; r[i] = s / 100; } cache.set(key, r); return r; }
 function curve(lift, b) { // CDF over the lift grid at bodyweight b, interpolated in log bodyweight
@@ -193,8 +213,9 @@ seg('sex', (v) => sex = v);
 seg('unit', (v) => { if (v === unit) return; const f = v === 'lb' ? 1 / LB : LB; unit = v;
   ['bw','squat','bench','deadlift','total'].forEach((id) => { const x = val(id); if (x) $(id).value = +(x * f).toFixed(1); }); });
 seg('tabs', (v) => tab = v);
+seg('cmp', (v) => cmpAll = v === 'all');
 let totalManual = false;
-['bw','squat','bench','deadlift','total'].forEach((id) => $(id).addEventListener('input', () => {
+['bw','age','squat','bench','deadlift','total'].forEach((id) => $(id).addEventListener('input', () => {
   if (id === 'total') totalManual = $('total').value !== ''; persist(); render(); }));
 $('lifts').addEventListener('click', (e) => { const r = e.target.closest('.lift'); if (!r) return; tab = r.dataset.v;
   [...$('tabs').children].forEach((c) => c.classList.toggle('on', c.dataset.v === tab)); render(); });
@@ -206,7 +227,10 @@ $('share').addEventListener('click', async () => { persist(); const url = locati
   const t = $('toast'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1400); });
 
 function render() {
+  const gk = groupKey(); if (!DATA[gk]) { load(gk).then(render); if (!D) return; } else D = DATA[gk];
   if (!D) return;
+  const ag = ageGroup(val('age')); $('cmp').hidden = !ag; if (ag) $('cmpAge').textContent = 'Age ' + DATA_LABEL[ag];
+  const who = (sex === 'M' ? 'men' : 'women') + (D.meta.group !== 'all' ? ` aged ${D.meta.group_label}` : '');
   document.querySelectorAll('.u').forEach((s) => s.textContent = unit);
   if (!totalManual) { const s = val('squat'), b = val('bench'), d = val('deadlift'); $('total').value = s && b && d ? +(s + b + d).toFixed(1) : ''; }
   $('totnote').textContent = totalManual ? 'entered by you' : 'sum of your three lifts';
@@ -218,9 +242,12 @@ function render() {
   // hero
   const h = res[tab]; $('kicker').textContent = NAMES[tab] + (bwRaw ? ` · ${fmtW(bwRaw)} ${unit} bodyweight` : '');
   if (h) { const f = fmtP(h.p); $('bigN').textContent = f.n; $('bigS').textContent = 'percentile';
-    $('line').innerHTML = `${tab === 'total' ? 'Your total' : 'Your ' + tab} beats <em>${h.p >= 99.995 ? 'more than 99.99' : h.p < 0.1 ? 'fewer than 0.1' : f.n}%</em> of raw, tested ${sex === 'M' ? 'men' : 'women'} who compete at your bodyweight: ${topPct(h.p)}.`; }
+    $('line').innerHTML = `${tab === 'total' ? 'Your total' : 'Your ' + tab} beats <em>${h.p >= 99.995 ? 'more than 99.99' : h.p < 0.1 ? 'fewer than 0.1' : f.n}%</em> of raw, tested ${who} who compete at your bodyweight: ${topPct(h.p)}.`; }
   else { $('bigN').textContent = '–'; $('bigS').textContent = '';
     $('line').textContent = !bw ? 'Enter your bodyweight and lifts.' : `Enter your ${tab === 'total' ? 'three lifts (or a total)' : tab} to see where you stand.`; }
+  const tot = val('total'), sc = $('scores');
+  if (bwRaw && tot) { const t = toKg(tot), b = bwRaw;
+    sc.innerHTML = `<span><i>DOTS</i>${dots(sex, b, t).toFixed(1)}</span><span><i>IPF GL</i>${gl(sex, b, t).toFixed(1)}</span>`; } else sc.innerHTML = '';
   drawChart(bw, res[tab], tab);
   drawWho(bw, tab, clamped);
   // lift rows
@@ -287,7 +314,7 @@ function drawWho(bw, lift, clamped) {
   const xl = 4 + 104 * (1.1 / 5.2), xh = 4 + 104 * (4.1 / 5.2);
   $('who').innerHTML = `<svg viewBox="0 0 112 50" aria-hidden="true"><path d="${p}L108,36L4,36Z" fill="var(--accfill)"/><path d="${p}" fill="none" stroke="var(--acc)" stroke-width="1.6"/><line x1="56" x2="56" y1="6" y2="36" stroke="var(--acc)" stroke-width="1.2" stroke-dasharray="2 2"/>
     <text x="${xl}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(lo)}</text><text x="56" y="47" text-anchor="middle" class="axis" style="font-size:9px;font-weight:700">${r(bw)}</text><text x="${xh}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(hi)}</text></svg>
-    <span>Compared with <b>${near.toLocaleString()} ${sex === 'M' ? 'men' : 'women'}</b> who weighed <b>${r(lo)}–${r(hi)} ${unit}</b>. ${clamped ? `Very few lifters weigh what you entered, so this uses the nearest group with enough data (${r(bw)} ${unit}).` : `The closer someone was to your ${r(bw)} ${unit}, the more they count.`}</span>`;
+    <span>Compared with <b>${near.toLocaleString()} ${sex === 'M' ? 'men' : 'women'}${D.meta.group !== 'all' ? ' aged ' + D.meta.group_label : ''}</b> who weighed <b>${r(lo)}–${r(hi)} ${unit}</b>. ${clamped ? `Very few lifters weigh what you entered, so this uses the nearest group with enough data (${r(bw)} ${unit}).` : `The closer someone was to your ${r(bw)} ${unit}, the more they count.`}</span>`;
 }
 
 // ---- state in the URL (shareable) and localStorage
@@ -295,6 +322,7 @@ function persist() {
   const q = new URLSearchParams(); q.set('s', sex); q.set('u', unit);
   for (const k of ['bw','squat','bench','deadlift']) if (val(k)) q.set(k === 'bw' ? 'bw' : k.slice(0, 2), $(k).value);
   if (totalManual && val('total')) q.set('t', $('total').value);
+  if (val('age')) q.set('a', $('age').value); if (cmpAll && val('age')) q.set('c', 'all');
   history.replaceState(null, '', '?' + q.toString());
   try { localStorage.plpct2 = q.toString(); } catch {}
 }
@@ -306,9 +334,10 @@ function restore() {
   const map = { bw: 'bw', sq: 'squat', be: 'bench', de: 'deadlift' };
   for (const [k, id] of Object.entries(map)) if (q.get(k)) $(id).value = q.get(k);
   if (q.get('t')) { $('total').value = q.get('t'); totalManual = true; }
+  if (q.get('a')) $('age').value = q.get('a'); if (q.get('c') === 'all') { cmpAll = true; [...$('cmp').children].forEach((c) => c.classList.toggle('on', c.dataset.v === 'all')); }
 }
 restore(); render();
-fetch('data.json', { cache: 'no-cache' }).then((r) => r.json()).then((d) => { D = d;
+load('all').then((d) => { if (!D) D = d;
   $('nM').textContent = (Math.round(d.meta.lifters.M_total / 1000) * 1000).toLocaleString();
   $('nF').textContent = (Math.round(d.meta.lifters.F_total / 1000) * 1000).toLocaleString();
   $('snap').textContent = new Date(d.meta.latest_meet).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
