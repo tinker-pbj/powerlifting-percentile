@@ -41,32 +41,40 @@ def rnd(x, step): return round(x / step) * step
 def kg(x): return f'{x:g}'
 def lb(x): return f'{round(x / LB / 5) * 5:,.0f}'
 
-CSS = """*{box-sizing:border-box}body{margin:0;background:#f3f3f3;color:#0b0b0b;font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.band{background:#0b0b0b;border-bottom:3px solid #e10b0b}.band header{max-width:900px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{color:#fff;text-decoration:none;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.brand b{color:#e10b0b}
-.nav{display:flex;gap:4px}.nav a{color:#bdbdbd;text-decoration:none;font-weight:700;font-size:.9rem;padding:7px 12px;border-radius:8px}.nav a:hover,.nav a.on{color:#fff;background:#222}
-@media (max-width:420px){.brand{font-size:.92rem}.nav a{padding:6px 8px;font-size:.85rem}}
-main{max-width:900px;margin:0 auto;padding:22px 20px 60px}h1{font-size:clamp(1.4rem,4vw,2rem);letter-spacing:-.02em;margin:6px 0 6px}h2{font-size:1.15rem;margin:28px 0 8px}
-p{max-width:70ch}.mut{color:#6e6e6e}a{color:#e10b0b}.crumb{font-size:.88rem;color:#6e6e6e}.crumb a{color:inherit}
-.card{background:#fff;border:1px solid #e3e3e3;border-radius:16px;padding:6px 18px 14px;margin:14px 0;overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:520px}th,td{text-align:right;padding:9px 8px;border-bottom:1px solid #eee}th:first-child,td:first-child{text-align:left}
-thead th{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:#6e6e6e}td small{color:#6e6e6e;display:block;font-size:.78rem}
-.cta{display:inline-block;background:#e10b0b;color:#fff;text-decoration:none;font-weight:800;padding:11px 18px;border-radius:99px;margin:8px 0}
-.classes{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none}.classes a{display:block;padding:7px 12px;border-radius:10px;background:#fff;border:1px solid #e3e3e3;color:#0b0b0b;text-decoration:none;font-weight:700}
-.classes a.on{background:#0b0b0b;color:#fff}footer{color:#6e6e6e;font-size:.8rem;margin-top:30px}footer a{color:inherit}"""
+CSS = """.crumb{font-size:.85rem;color:var(--mut);margin-bottom:6px}.crumb a{color:inherit}
+.std{padding:6px 18px 10px;margin:0 0 16px;overflow-x:auto}
+.std table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:540px}
+.std th,.std td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line)}.std th:first-child,.std td:first-child{text-align:left}
+.std tr:last-child td{border-bottom:0}.std thead th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+.std td small{color:var(--mut);display:block;font-size:.78rem}
+.cta{display:inline-flex;align-items:center;gap:6px;background:var(--acc);color:#fff!important;text-decoration:none;font-weight:800;font-size:.92rem;padding:10px 16px;border-radius:99px}
+.sec{padding:18px 22px;margin:0 0 16px}.sec h2{font-size:1rem;margin:0 0 10px}.sec p{margin:0;color:var(--mut);font-size:.92rem;max-width:72ch}
+.classes{display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none}
+.classes a{display:block;padding:7px 12px;border-radius:9px;background:var(--soft);color:var(--ink);text-decoration:none;font-weight:700;font-size:.9rem}
+.classes a.on{background:var(--ink);color:var(--card)}"""
 
-def page(title, desc, path, body):
+# Header and footer come from the calculator page, so every page shares them exactly.
+_INDEX = open('docs/index.html').read()
+def _between(a, b): return _INDEX[_INDEX.index(a) + len(a):_INDEX.index(b)]
+HEADER = _between('<!--header-->', '<!--/header-->').replace('<a href="/" class="on">', '<a href="/">').replace('<a href="/standards/">', '<a href="/standards/" class="on">')
+FOOTER_TMPL = _between('<!--footer-->', '<!--/footer-->')
+
+def page(title, desc, path, body, snap):
+    footer = FOOTER_TMPL.replace('<span id="snap">2026</span>', snap)
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title><meta name="description" content="{html.escape(desc)}"><link rel="canonical" href="{SITE}{path}">
 <meta property="og:title" content="{html.escape(title)}"><meta property="og:description" content="{html.escape(desc)}"><meta property="og:image" content="{SITE}/og.png"><meta name="twitter:card" content="summary_large_image">
-<style>{CSS}</style></head><body><div class="band"><header><a class="brand" href="/">Strength <b>Percentile</b></a><nav class="nav"><a href="/">Calculator</a><a href="/standards/" class="on">Standards</a></nav></header></div><main>{body}
-<footer>Data: <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> and <a href="https://www.openweightlifting.org">OpenWeightlifting</a> (public domain), refreshed weekly. Not affiliated with either. · <a href="/standards/">All strength standards</a> · <a href="/">Calculator</a></footer>
-</main><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{{"token": "472b7ce3b3a14314816f2c2c47df804c"}}'></script></body></html>"""
+<meta name="theme-color" content="#0b0b0b"><link rel="stylesheet" href="/site.css"><style>{CSS}</style></head><body>
+{HEADER}
+<div class="wrap">{body}
+{footer}
+</div><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{{"token": "472b7ce3b3a14314816f2c2c47df804c"}}'></script></body></html>"""
 
 def cls_label(c): return f'{c} kg' 
 def cls_slug(c): return f'{c.rstrip("+")}plus-kg' if isinstance(c, str) else f'{c}kg'
 
 urls = [('/', '1.0'), ('/standards/', '0.9')]
+SNAP = datetime.date.fromisoformat(json.load(open('docs/data.json'))['meta']['latest_meet'][:10]).strftime('%B %Y')
 index_parts = []
 for sport, cfg in SPORTS.items():
     D = json.load(open(cfg['file']))
@@ -76,7 +84,7 @@ for sport, cfg in SPORTS.items():
         links = []
         for c in classes:
             links.append((c, f'/standards/{sport}/{word}/{cls_slug(c)}/'))
-        index_parts.append(f'<h2>{Word}: {sport}</h2><ul class="classes">' + ''.join(f'<li><a href="{u}">{cls_label(c)}</a></li>' for c, u in links) + '</ul>')
+        index_parts.append(f'<div class="card sec"><h2>{Word}: {sport}</h2><ul class="classes">' + ''.join(f'<li><a href="{u}">{cls_label(c)}</a></li>' for c, u in links) + '</ul></div>')
         for c, url in links:
             bw = cfg['plus_bw'][sex] if isinstance(c, str) else c
             bw_txt = f'{cls_label(c)} class' + (f' (about {bw} kg / {round(bw / LB)} lb)' if isinstance(c, str) else f' ({round(bw / LB)} lb)')
@@ -93,24 +101,24 @@ for sport, cfg in SPORTS.items():
                     f"Median total {kg(med)} kg ({lb(med)} lb), 90th percentile {kg(p90)} kg, from real {cfg['who']}.")
             nav = '<ul class="classes">' + ''.join(f'<li><a href="{u}"{" class=on" if cc == c else ""}>{cls_label(cc)}</a></li>' for cc, u in links) + '</ul>'
             calc = f"/?{cfg['param']}s={sex}&u=kg&bw={bw}"
-            body = f"""<div class="crumb"><a href="/standards/">Strength standards</a> › {sport.title()} › {Word}</div>
+            body = f"""<div class="intro"><div class="crumb"><a href="/standards/">Strength standards</a> › {sport.title()} › {Word}</div>
 <h1>{Word}, {cls_label(c)}: {sport} strength standards</h1>
-<p>How {cfg['who']} in the {bw_txt} compare. Each number is the best lift at that percentile among {word} near this bodyweight: e.g. the <b>90th percentile</b> column is stronger than 90% of them. The median total here is <b>{kg(med)} kg ({lb(med)} lb)</b>.</p>
-<div class="card"><table><thead><tr><th>Lift</th>{''.join(f'<th>{p}th</th>' if p != 50 else '<th>Median</th>' for p in PCTS)}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>
-<a class="cta" href="{calc}">Calculate your exact percentile →</a>
-<h2>Other weight classes</h2>{nav}
-<h2>How these are calculated</h2>
-<p class="mut">From OpenPowerlifting / OpenWeightlifting meet results{', raw and drug-tested only' if sport == 'powerlifting' else ''}. Each lifter counts once, at their best result, and lifters closer to {bw} kg bodyweight count more (a bell curve about ±3.5% wide). Percentiles are among people who compete, a strong crowd.</p>"""
+<p>How {cfg['who']} in the {bw_txt} compare. Each number is the best lift at that percentile among {word} near this bodyweight: e.g. the <b>90th percentile</b> column is stronger than 90% of them. The median total here is <b>{kg(med)} kg ({lb(med)} lb)</b>.</p></div>
+<div class="card std"><table><thead><tr><th>Lift</th>{''.join(f'<th>{p}th</th>' if p != 50 else '<th>Median</th>' for p in PCTS)}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>
+<p><a class="cta" href="{calc}">Calculate your exact percentile →</a></p>
+<div class="card sec"><h2>Other weight classes</h2>{nav}</div>
+<div class="card sec"><h2>How these are calculated</h2>
+<p>From OpenPowerlifting / OpenWeightlifting meet results{', raw and drug-tested only' if sport == 'powerlifting' else ''}. Each lifter counts once, at their best result, and lifters closer to {bw} kg bodyweight count more (a bell curve about ±3.5% wide). Percentiles are among people who compete, a strong crowd.</p></div>"""
             os.makedirs('docs' + url, exist_ok=True)
-            open('docs' + url + 'index.html', 'w').write(page(title, desc, url, body))
+            open('docs' + url + 'index.html', 'w').write(page(title, desc, url, body, SNAP))
             urls.append((url, '0.7'))
 
-body = ('<div class="crumb"><a href="/">Calculator</a></div><h1>Strength standards by weight class</h1>'
+body = ('<div class="intro"><h1>Strength standards by weight class</h1>'
         '<p>Squat, bench, deadlift, snatch and clean &amp; jerk percentiles for men and women in every weight class, from real meet results. '
-        'Pick a class, or <a href="/">calculate your exact percentile</a>.</p>' + ''.join(index_parts))
+        'Pick a class, or <a href="/" style="color:inherit">calculate your exact percentile</a>.</p></div>' + ''.join(index_parts))
 os.makedirs('docs/standards', exist_ok=True)
 open('docs/standards/index.html', 'w').write(page('Strength standards by weight class: powerlifting and weightlifting',
-     'Squat, bench, deadlift, snatch and clean & jerk standards for men and women in every weight class, from real competition results.', '/standards/', body))
+     'Squat, bench, deadlift, snatch and clean & jerk standards for men and women in every weight class, from real competition results.', '/standards/', body, SNAP))
 
 today = datetime.date.today().isoformat()
 open('docs/sitemap.xml', 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
