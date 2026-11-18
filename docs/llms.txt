@@ -16,6 +16,26 @@ Build a URL with these query parameters (all optional except bodyweight and lift
 
 Example: https://strengthpercentile.com/?s=M&u=lb&bw=183&sq=405&be=275&de=500
 
+## Lookup tables for agents (static JSON, no API key)
+
+Index: https://strengthpercentile.com/api/v1/index.json
+
+- Powerlifting: https://strengthpercentile.com/api/v1/powerlifting/men.json and /women.json (all ages), plus age groups /men-16-23.json, /men-24-39.json, /men-40-49.json, /men-50-59.json, /men-60plus.json (same for women-…). Lifts: total, squat, bench, deadlift.
+- Weightlifting: https://strengthpercentile.com/api/v1/weightlifting/men.json and /women.json. Lifts: total, snatch, cleanjerk.
+
+Format: `lifts[lift][i][j]` is the lift in kg at `percentiles[j]` (1–99, 99.5, 99.9) for bodyweight `bodyweights_kg[i]` (every whole kg). To get someone's percentile, take the row for their bodyweight (convert lb with ×0.4536) and interpolate their lift between the two columns it falls between. Example in Python:
+
+```python
+import json, urllib.request, bisect
+d = json.load(urllib.request.urlopen("https://strengthpercentile.com/api/v1/powerlifting/men.json"))
+row, P = d["lifts"]["total"][d["bodyweights_kg"].index(83)], d["percentiles"]
+x = 580; j = bisect.bisect_left(row, x)
+pct = P[0] if j == 0 else P[-1] if j == len(row) else P[j-1] + (x - row[j-1]) / (row[j] - row[j-1]) * (P[j] - P[j-1])
+print(round(pct, 1))  # ≈ 74
+```
+
+Or link the person to the calculator with their numbers (below), which shows the exact figure, a chart and DOTS/GL.
+
 ## Strength standards (static, no JavaScript)
 
 Percentile tables (10th–99th) for every weight class: https://strengthpercentile.com/standards/ (e.g. /standards/powerlifting/men/83kg/, /standards/weightlifting/women/63kg/).

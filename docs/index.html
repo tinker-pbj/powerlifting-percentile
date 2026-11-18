@@ -114,20 +114,20 @@ svg{display:block;width:100%;height:auto}
         <div class="seg" id="unit"><button data-v="kg" class="on">kg</button><button data-v="lb">lb</button></div>
       </div>
       <div class="cols c2">
-        <label class="f"><span>Bodyweight</span><div class="in"><input id="bw" type="number" inputmode="decimal" min="0" step="0.1" placeholder="83"><span class="u"></span></div></label>
-        <label class="f" id="ageField"><span>Age <small>optional</small></span><div class="in"><input id="age" type="number" inputmode="numeric" min="0" step="1" placeholder="–"><span>yrs</span></div></label>
+        <label class="f"><span>Bodyweight</span><div class="in"><input autocomplete="off" id="bw" type="number" inputmode="decimal" min="0" step="0.1" placeholder="83"><span class="u"></span></div></label>
+        <label class="f" id="ageField"><span>Age <small>optional</small></span><div class="in"><input autocomplete="off" id="age" type="number" inputmode="numeric" min="0" step="1" placeholder="–"><span>yrs</span></div></label>
       </div>
       <div class="cols c3" id="liftInputs">
-        <label class="f"><span>Squat</span><div class="in"><input id="squat" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
-        <label class="f"><span>Bench</span><div class="in"><input id="bench" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
-        <label class="f"><span>Deadlift</span><div class="in"><input id="deadlift" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+        <label class="f"><span>Squat</span><div class="in"><input autocomplete="off" id="squat" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+        <label class="f"><span>Bench</span><div class="in"><input autocomplete="off" id="bench" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+        <label class="f"><span>Deadlift</span><div class="in"><input autocomplete="off" id="deadlift" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
       </div>
       <div class="cols c2" id="wlInputs" hidden>
-        <label class="f"><span>Snatch</span><div class="in"><input id="snatch" type="number" inputmode="decimal" min="0" step="1"><span class="u"></span></div></label>
-        <label class="f"><span>Clean &amp; jerk</span><div class="in"><input id="cleanjerk" type="number" inputmode="decimal" min="0" step="1"><span class="u"></span></div></label>
+        <label class="f"><span>Snatch</span><div class="in"><input autocomplete="off" id="snatch" type="number" inputmode="decimal" min="0" step="1"><span class="u"></span></div></label>
+        <label class="f"><span>Clean &amp; jerk</span><div class="in"><input autocomplete="off" id="cleanjerk" type="number" inputmode="decimal" min="0" step="1"><span class="u"></span></div></label>
       </div>
       <div class="cols c1">
-        <label class="f tot"><span>Total <small id="totnote">sum of your three lifts</small></span><div class="in"><input id="total" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+        <label class="f tot"><span>Total <small id="totnote">sum of your three lifts</small></span><div class="in"><input autocomplete="off" id="total" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
       </div>
     </section>
 
@@ -215,7 +215,7 @@ const topPct = (p) => { const t = 100 - p; return t >= 1 ? `top ${t.toFixed(t < 
 
 // ---- UI
 function seg(id, set) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return;
-  [...$(id).children].forEach((c) => c.classList.toggle('on', c === b)); set(b.dataset.v); persist(); render(); }); }
+  [...$(id).children].forEach((c) => c.classList.toggle('on', c === b)); set(b.dataset.v); render(); }); }
 seg('sex', (v) => sex = v);
 seg('unit', (v) => { if (v === unit) return; const f = v === 'lb' ? 1 / LB : LB; unit = v;
   ALL_INPUTS.filter((id) => id !== 'age').forEach((id) => { const x = val(id); if (x) $(id).value = +(x * f).toFixed(1); }); });
@@ -224,11 +224,11 @@ seg('tabs', (v) => tab = v);
 seg('cmp', (v) => cmpAll = v === 'all');
 let totalManual = false;
 ALL_INPUTS.forEach((id) => $(id).addEventListener('input', () => {
-  if (id === 'total') totalManual = $('total').value !== ''; persist(); render(); }));
+  if (id === 'total') totalManual = $('total').value !== ''; render(); }));
 $('lifts').addEventListener('click', (e) => { const r = e.target.closest('.lift'); if (!r) return; tab = r.dataset.v;
   [...$('tabs').children].forEach((c) => c.classList.toggle('on', c.dataset.v === tab)); render(); });
-$('share').addEventListener('click', async () => { persist();
-  const url = location.href;
+$('share').addEventListener('click', async () => {
+  const url = shareUrl();
   const r = val('bw') && val('total') && D ? pAt(curve('total', toKg(val('bw'))), toKg(val('total'))) : null;
   const text = r != null ? `My ${SPORT[sport].noun} total is in the ${fmtP(r).n} percentile ${sport === 'pl' ? 'of raw, tested lifters' : 'of competitive weightlifters'} at my bodyweight.` : 'How strong are you for your bodyweight?';
   if (navigator.share && matchMedia('(pointer:coarse)').matches) { try { await navigator.share({ title: 'Strength Percentile', text, url }); return; } catch {} }
@@ -328,19 +328,20 @@ function drawWho(bw, lift, clamped) {
     <span>Compared with <b>${near.toLocaleString()} ${sex === 'M' ? 'men' : 'women'}${D.meta.group !== 'all' ? ' aged ' + D.meta.group_label : ''}</b> who weighed <b>${r(lo)}–${r(hi)} ${unit}</b>. ${clamped ? `Very few lifters weigh what you entered, so this uses the nearest group with enough data (${r(bw)} ${unit}).` : `The closer someone was to your ${r(bw)} ${unit}, the more they count.`}</span>`;
 }
 
-// ---- state in the URL (shareable) and localStorage
-function persist() {
+// ---- share links carry the numbers; a plain visit or a refresh starts blank
+function shareUrl() {
   const q = new URLSearchParams(); q.set('s', sex); q.set('u', unit);
   if (sport === 'wl') q.set('sp', 'wl');
   const KEYS = { bw: 'bw', squat: 'sq', bench: 'be', deadlift: 'de', snatch: 'sn', cleanjerk: 'cj' };
   for (const k of ['bw', ...SPORT[sport].parts]) if (val(k)) q.set(KEYS[k], $(k).value);
   if (totalManual && val('total')) q.set('t', $('total').value);
   if (sport === 'pl' && val('age')) q.set('a', $('age').value); if (cmpAll && val('age')) q.set('c', 'all');
-  history.replaceState(null, '', '?' + q.toString());
-  try { localStorage.plpct2 = q.toString(); } catch {}
+  return location.origin + '/?' + q.toString();
 }
 function restore() {
-  let q = new URLSearchParams(location.search); if (![...q.keys()].length) { try { q = new URLSearchParams(localStorage.plpct2 || ''); } catch {} }
+  const q = new URLSearchParams(location.search);
+  try { localStorage.removeItem('plpct2'); } catch {}
+  if ([...q.keys()].length) history.replaceState(null, '', location.pathname);   // so a refresh gives a clean form
   if (q.get('s') === 'F') sex = 'F'; if (q.get('u') === 'lb') unit = 'lb';
   [...$('sex').children].forEach((c) => c.classList.toggle('on', c.dataset.v === sex));
   [...$('unit').children].forEach((c) => c.classList.toggle('on', c.dataset.v === unit));

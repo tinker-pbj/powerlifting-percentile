@@ -23,7 +23,7 @@ jobs:
           git -C owl sparse-checkout set event_data
           python owl_normalize.py owl/event_data owl.csv
       - run: python build_wl.py owl.csv
-      - run: python gen_standards.py
+      - run: python gen_standards.py && python gen_api.py
       - name: Sanity check
         run: |
           python - <<'PY'
@@ -36,7 +36,7 @@ jobs:
         run: |
           git diff --quiet docs/ && { echo "no change"; exit 0; }
           git config user.name "Tinker (bot)"; git config user.email "tinker@prestonbjensen.com"
-          git add docs/data*.json docs/wl docs/standards docs/sitemap.xml && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push
+          git add docs/data*.json docs/wl docs/standards docs/api docs/sitemap.xml && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push
       - name: Ping IndexNow (Bing, Yandex, ...)
         run: |
           python - <<'PY'

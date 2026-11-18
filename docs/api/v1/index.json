@@ -1,0 +1,171 @@
+{
+ "tables": [
+  {
+   "sport": "powerlifting",
+   "sex": "men",
+   "age_group": "all ages",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/men.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "women",
+   "age_group": "all ages",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/women.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "men",
+   "age_group": "16-23",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/men-16-23.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "women",
+   "age_group": "16-23",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/women-16-23.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "men",
+   "age_group": "24-39",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/men-24-39.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "women",
+   "age_group": "24-39",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/women-24-39.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "men",
+   "age_group": "40-49",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/men-40-49.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "women",
+   "age_group": "40-49",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/women-40-49.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "men",
+   "age_group": "50-59",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/men-50-59.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "women",
+   "age_group": "50-59",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/women-50-59.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "men",
+   "age_group": "60plus",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/men-60plus.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "powerlifting",
+   "sex": "women",
+   "age_group": "60plus",
+   "url": "https://strengthpercentile.com/api/v1/powerlifting/women-60plus.json",
+   "lifts": [
+    "total",
+    "squat",
+    "bench",
+    "deadlift"
+   ]
+  },
+  {
+   "sport": "weightlifting",
+   "sex": "men",
+   "age_group": "all ages",
+   "url": "https://strengthpercentile.com/api/v1/weightlifting/men.json",
+   "lifts": [
+    "total",
+    "snatch",
+    "cleanjerk"
+   ]
+  },
+  {
+   "sport": "weightlifting",
+   "sex": "women",
+   "age_group": "all ages",
+   "url": "https://strengthpercentile.com/api/v1/weightlifting/women.json",
+   "lifts": [
+    "total",
+    "snatch",
+    "cleanjerk"
+   ]
+  }
+ ],
+ "docs": "https://strengthpercentile.com/llms.txt"
+}

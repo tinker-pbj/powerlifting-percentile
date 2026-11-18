@@ -4,6 +4,7 @@ docs/standards/index.html and docs/standards/{powerlifting,weightlifting}/{men,w
 docs/sitemap.xml. Run after build.py and build_wl.py.
 """
 import json, math, os, html, datetime
+from pctlib import quantile
 
 SITE = 'https://strengthpercentile.com'
 LB = 0.45359237
@@ -19,22 +20,6 @@ SPORTS = {
                       'plus_bw': {'M': 125, 'F': 100}},
 }
 SEX = {'M': ('men', 'Men'), 'F': ('women', 'Women')}
-
-
-def quantile(D, sex, lift, bw, p):
-    S = D['data'][sex]; L = S['lifts'][lift]; st = D['meta']['bw_step_log']
-    i = math.log(bw / S['bw0']) / st
-    a = max(0, min(S['nbw'] - 2, math.floor(i))); f = max(0.0, min(1.0, i - a))
-    def cdf(k):
-        s, out = 0, []
-        for d in L['rows'][k]: s += d; out.append(s / 100)
-        return out
-    r0, r1 = cdf(a), cdf(a + 1)
-    c = [r0[k] + f * (r1[k] - r0[k]) for k in range(L['n'])]
-    k = 0
-    while k < len(c) - 1 and c[k + 1] < p: k += 1
-    span = c[k + 1] - c[k] if k + 1 < len(c) else 0
-    return L['x0'] + D['meta']['lift_step'] * (k + ((p - c[k]) / span if span > 0 else 0))
 
 
 def rnd(x, step): return round(x / step) * step
