@@ -17,7 +17,7 @@ import duckdb, numpy as np, json, sys, math
 
 CSV = sys.argv[1] if len(sys.argv) > 1 else 'opl.csv'
 H, MIN_EFF, STEP, BW_STEP = 0.035, 1500, 2.5, 0.015
-BW_RANGE = {'F': (40, 160), 'M': (50, 210)}
+BW_RANGE = {'F': (40, 170), 'M': (50, 230)}
 LIFTS = {'total': 'tot', 'squat': 'sq', 'bench': 'bp', 'deadlift': 'dl'}
 
 con = duckdb.connect(); con.execute("SET memory_limit='1500MB'")
@@ -42,9 +42,9 @@ for sex, (lo, hi) in BW_RANGE.items():
         lbw = np.log(r['bw']); x = r[col]
         o = np.argsort(x); x = x[o]; lbw = lbw[o]
         out["meta"]["lifters"][f"{sex}_{lift}"] = int(len(x))
-        # common lift grid for this sex/lift: from the 0.01st to the 99.995th percentile of all lifters, padded
+        # common lift grid for this sex/lift: from the 0.01st percentile of all lifters to past the strongest one
         g0 = math.floor(np.quantile(x, 0.0001) / STEP) * STEP - STEP
-        g1 = math.ceil(np.quantile(x, 0.99995) / STEP) * STEP + 4 * STEP
+        g1 = math.ceil(x.max() / STEP) * STEP + STEP   # past the strongest lifter: P reaches 100 at every bodyweight
         grid = np.arange(g0, g1 + STEP / 2, STEP)
         left = np.searchsorted(x, grid, 'left'); right = np.searchsorted(x, grid, 'right')
         rows = []; hs = []; near = []

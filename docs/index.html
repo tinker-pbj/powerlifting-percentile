@@ -204,23 +204,26 @@ function render() {
   document.querySelectorAll('.u').forEach((s) => s.textContent = unit);
   if (!totalManual) { const s = val('squat'), b = val('bench'), d = val('deadlift'); $('total').value = s && b && d ? +(s + b + d).toFixed(1) : ''; }
   $('totnote').textContent = totalManual ? 'entered by you' : 'sum of your three lifts';
-  const bwU = val('bw'), bw = bwU && toKg(bwU);
+  const bwU = val('bw'), bwRaw = bwU && toKg(bwU), S = D.data[sex];
+  const bwMax = S.bw0 * Math.exp(D.meta.bw_step_log * (S.nbw - 1));
+  const bw = bwRaw && Math.min(Math.max(bwRaw, S.bw0), bwMax), clamped = bwRaw && bw !== bwRaw;
   const res = {};
   for (const l of LIFTS) { const x = val(l); if (bw && x) { const cv = curve(l, bw), xk = Math.round(toKg(x) * 10) / 10; res[l] = { cv, x: xk, p: pAt(cv, xk) }; } }
   // hero
-  const h = res[tab]; $('kicker').textContent = NAMES[tab] + (bw ? ` · ${fmtW(bw)} ${unit} bodyweight` : '');
+  const h = res[tab]; $('kicker').textContent = NAMES[tab] + (bwRaw ? ` · ${fmtW(bwRaw)} ${unit} bodyweight` : '');
   if (h) { const f = fmtP(h.p); $('bigN').textContent = f.n; $('bigS').textContent = 'percentile';
     $('line').innerHTML = `${tab === 'total' ? 'Your total' : 'Your ' + tab} beats <em>${h.p >= 99.995 ? 'more than 99.99' : h.p < 0.1 ? 'fewer than 0.1' : f.n}%</em> of raw, tested ${sex === 'M' ? 'men' : 'women'} who compete at your bodyweight: ${topPct(h.p)}.`; }
   else { $('bigN').textContent = '–'; $('bigS').textContent = '';
     $('line').textContent = !bw ? 'Enter your bodyweight and lifts.' : `Enter your ${tab === 'total' ? 'three lifts (or a total)' : tab} to see where you stand.`; }
   drawChart(bw, res[tab], tab);
-  drawWho(bw, tab);
+  drawWho(bw, tab, clamped);
   // lift rows
   let html = '';
   for (const l of LIFTS) { const r = res[l], x = val(l);
     let next = '';
     if (r) { const m = MILESTONES.find((q) => q > r.p + 0.004);
-      if (m) { const need = Math.ceil((fromKg(xAt(r.cv, m)) - fromKg(r.x)) / stepU() - 1e-9) * stepU();
+      const need = m ? Math.max(stepU(), Math.ceil((fromKg(xAt(r.cv, m)) - fromKg(r.x)) / stepU() - 1e-9) * stepU()) : 0;
+      if (m) {
         next = `<div class="next"><b>+${need.toLocaleString()} ${unit}</b> to reach the ${m}${m % 1 ? 'th' : ordSuf(String(m))} percentile</div>`; }
       else next = `<div class="next">Top of the table. Nothing left to chase here.</div>`; }
     const f = r ? fmtP(r.p) : null;
@@ -268,7 +271,7 @@ function drawChart(bw, r, lift) {
   svg.innerHTML = g;
 }
 
-function drawWho(bw, lift) {
+function drawWho(bw, lift, clamped) {
   if (!bw) { $('who').innerHTML = ''; return; }
   const S = D.data[sex], L = S.lifts[lift], i = Math.log(bw / S.bw0) / D.meta.bw_step_log;
   const k = Math.max(0, Math.min(S.nbw - 1, Math.round(i))), h = L.h[k], near = L.near[k];
@@ -278,7 +281,7 @@ function drawWho(bw, lift) {
   const xl = 4 + 104 * (1.1 / 5.2), xh = 4 + 104 * (4.1 / 5.2);
   $('who').innerHTML = `<svg viewBox="0 0 112 50" aria-hidden="true"><path d="${p}L108,36L4,36Z" fill="var(--accfill)"/><path d="${p}" fill="none" stroke="var(--acc)" stroke-width="1.6"/><line x1="56" x2="56" y1="6" y2="36" stroke="var(--acc)" stroke-width="1.2" stroke-dasharray="2 2"/>
     <text x="${xl}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(lo)}</text><text x="56" y="47" text-anchor="middle" class="axis" style="font-size:9px;font-weight:700">${r(bw)}</text><text x="${xh}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(hi)}</text></svg>
-    <span>Compared with <b>${near.toLocaleString()} ${sex === 'M' ? 'men' : 'women'}</b> who weighed <b>${r(lo)}–${r(hi)} ${unit}</b>. The closer someone was to your ${r(bw)} ${unit}, the more they count.</span>`;
+    <span>Compared with <b>${near.toLocaleString()} ${sex === 'M' ? 'men' : 'women'}</b> who weighed <b>${r(lo)}–${r(hi)} ${unit}</b>. ${clamped ? `Very few lifters weigh what you entered, so this uses the nearest group with enough data (${r(bw)} ${unit}).` : `The closer someone was to your ${r(bw)} ${unit}, the more they count.`}</span>`;
 }
 
 // ---- state in the URL (shareable) and localStorage
@@ -299,7 +302,7 @@ function restore() {
   if (q.get('t')) { $('total').value = q.get('t'); totalManual = true; }
 }
 restore(); render();
-fetch('data.json').then((r) => r.json()).then((d) => { D = d;
+fetch('data.json', { cache: 'no-cache' }).then((r) => r.json()).then((d) => { D = d;
   $('nM').textContent = (Math.round(d.meta.lifters.M_total / 1000) * 1000).toLocaleString();
   $('nF').textContent = (Math.round(d.meta.lifters.F_total / 1000) * 1000).toLocaleString();
   $('snap').textContent = new Date(d.meta.latest_meet).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
