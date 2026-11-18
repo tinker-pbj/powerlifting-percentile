@@ -1,8 +1,8 @@
-# Powerlifting Percentile
+# Strength Percentile
 
 How your squat, bench, deadlift and total compare with **raw, drug-tested** powerlifters at your bodyweight.
 
-**Live:** https://tinker-pbj.github.io/powerlifting-percentile/
+**Live:** https://strengthpercentile.com
 
 ## Method
 Population: every lifter in [OpenPowerlifting](https://www.openpowerlifting.org) who competed raw, in a drug-tested,
