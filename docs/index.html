@@ -244,7 +244,9 @@ ALL_INPUTS.forEach((id) => $(id).addEventListener('input', () => {
   if (id === 'total') totalManual = $('total').value !== ''; persist(); render(); }));
 $('lifts').addEventListener('click', (e) => { const r = e.target.closest('.lift'); if (!r) return; tab = r.dataset.v;
   [...$('tabs').children].forEach((c) => c.classList.toggle('on', c.dataset.v === tab)); render(); });
-$('share').addEventListener('click', async () => { persist(); const url = location.href;
+$('share').addEventListener('click', async () => { persist();
+  // a URL that differs from the open page, so iOS fetches it fresh (through the preview Worker) instead of reusing this page's tags
+  const url = location.origin + location.pathname + location.search + (location.search ? '&' : '?') + 'via=share';
   const r = val('bw') && val('total') && D ? pAt(curve('total', toKg(val('bw'))), toKg(val('total'))) : null;
   const text = r != null ? `My ${SPORT[sport].noun} total is in the ${fmtP(r).n} percentile ${sport === 'pl' ? 'of raw, tested lifters' : 'of competitive weightlifters'} at my bodyweight.` : 'How strong are you for your bodyweight?';
   if (r != null) setPreview(r);   // Safari builds the iMessage preview from this page's tags, not by re-fetching the link
