@@ -8,13 +8,11 @@
 <line x1="1078.6" x2="1078.6" y1="300" y2="520" stroke="#fff" stroke-width="4"/>
 <circle cx="1078.6" cy="446.8" r="11" fill="#e10b0b" stroke="#fff" stroke-width="5"/>
 <text x="1078.6" y="285" text-anchor="middle" font-family="Inter" font-weight="800" font-size="30" fill="#fff">YOU</text>
-<rect x="64" y="70" width="44" height="44" rx="10" fill="#e10b0b"/>
-<rect x="73" y="84" width="7" height="16" rx="1.5" fill="#fff"/><rect x="92" y="84" width="7" height="16" rx="1.5" fill="#fff"/><rect x="80" y="90" width="12" height="4" fill="#fff"/>
-<text x="124" y="104" font-family="Inter" font-weight="800" font-size="30" letter-spacing="2" fill="#fff">STRENGTH PERCENTILE</text>
+<text x="64" y="104" font-family="Inter" font-weight="900" font-size="32" letter-spacing="3" fill="#fff">STRENGTH <tspan fill="#e10b0b">PERCENTILE</tspan></text>
 <text x="64" y="230" font-family="Inter Display" font-weight="800" font-size="76" fill="#fff">How strong</text>
 <text x="64" y="316" font-family="Inter Display" font-weight="800" font-size="76" fill="#fff">are you for</text>
 <text x="64" y="402" font-family="Inter Display" font-weight="800" font-size="76" fill="#e10b0b">your weight?</text>
-<text x="64" y="480" font-family="Inter" font-weight="500" font-size="28" fill="#a8a8a8">Squat, bench, deadlift and total as a percentile</text>
-<text x="64" y="518" font-family="Inter" font-weight="500" font-size="28" fill="#a8a8a8">of 340,000 raw, drug-tested powerlifters.</text>
+<text x="64" y="480" font-family="Inter" font-weight="500" font-size="28" fill="#a8a8a8">Powerlifting and weightlifting percentiles</text>
+<text x="64" y="518" font-family="Inter" font-weight="500" font-size="28" fill="#a8a8a8">from 440,000 real competitors.</text>
 <text x="64" y="584" font-family="Inter" font-weight="800" font-size="30" fill="#fff">strengthpercentile.com</text>
 </svg>

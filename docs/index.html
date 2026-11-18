@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Strength Percentile: how strong are you for your bodyweight?</title>
-<meta name="description" content="Your squat, bench, deadlift and total as a percentile of raw, drug-tested powerlifters at your bodyweight. 340,000 lifters from OpenPowerlifting.">
+<meta name="description" content="Your squat, bench, deadlift, snatch and clean &amp; jerk as a percentile of competitive lifters at your bodyweight. Real meet results from OpenPowerlifting and OpenWeightlifting.">
 <meta property="og:title" content="Strength Percentile">
 <meta property="og:description" content="How your lifts rank among raw, drug-tested powerlifters at your bodyweight.">
 <meta property="og:type" content="website">
@@ -30,30 +30,36 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,
 .wrap{max-width:1040px;margin:0 auto;padding:22px 20px 64px}
 .band{background:#0b0b0b;color:#fff;border-bottom:3px solid var(--acc)}
 header{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{font-weight:900;letter-spacing:.02em;text-transform:uppercase;font-size:1.05rem;display:flex;align-items:center;gap:10px}
-.brand i{display:inline-block;width:22px;height:22px;border-radius:6px;background:var(--acc);position:relative;top:4px}
-.brand i:before{content:"";position:absolute;left:4px;right:4px;top:9.5px;height:3px;background:#fff;box-shadow:-1px -4px 0 -1px #fff0}
+.brand{font-weight:900;letter-spacing:.04em;text-transform:uppercase;font-size:1.05rem;display:flex;align-items:center;gap:.35em}
+.brand b{color:var(--acc);font-weight:900}
 .tag{color:#a8a8a8;font-size:.85rem}
 .grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
 .grid>*{min-width:0}
 @media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}.tag{display:none}}
 @media (max-width:480px){.wrap{padding:18px 12px 48px}.hero{padding:20px 18px 6px}.lifts{padding:4px 18px 16px}.inputs{padding:16px}
-  .lift{grid-template-columns:78px 1fr 64px;gap:4px 12px}.field{grid-template-columns:1fr 120px}.method{padding:18px}.tabs button{padding:9px 8px}}
+  .lift{grid-template-columns:78px 1fr 64px;gap:4px 12px}.method{padding:18px}.tabs button{padding:9px 8px}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
 .inputs{padding:20px}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:11px;padding:3px;margin-bottom:10px}
 .seg button{font:inherit;font-weight:600;font-size:.92rem;border:0;border-radius:8px;padding:8px 0;background:transparent;color:var(--mut);cursor:pointer;transition:background .15s,color .15s}
 .seg button.on{background:var(--ink);color:var(--card)}
-.field{display:grid;grid-template-columns:1fr 128px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
-.field:first-of-type{margin-top:8px}
-.field label{font-weight:600}
-.field small{display:block;color:var(--mut);font-weight:400;font-size:.8rem}
+.sport{margin-bottom:8px}
+.sport button{padding:10px 0}
+[hidden]{display:none!important}
+.segrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.segrow .seg{margin:0}
+.cols{display:grid;gap:10px;margin-top:12px}
+.c1{grid-template-columns:1fr}.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}
+.f{display:block;min-width:0}
+.f>span{display:block;font-weight:700;font-size:.82rem;margin:0 0 5px 2px}
+.f small{color:var(--mut);font-weight:500;font-size:.75rem}
+.tot .in input{text-align:left}
 .in{position:relative}
-.in input{width:100%;font:inherit;font-size:1.05rem;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;padding:9px 38px 9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);outline:none;-moz-appearance:textfield;transition:border-color .15s,box-shadow .15s}
+.in input{width:100%;font:inherit;font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;text-align:left;padding:10px 30px 10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);outline:none;-moz-appearance:textfield;transition:border-color .15s,box-shadow .15s}
 .in input::-webkit-outer-spin-button,.in input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .in input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accbg)}
 .in input::placeholder{color:var(--mut);font-weight:400}
-.in span{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:.85rem;pointer-events:none}
+.in span{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:.85rem;pointer-events:none}
 .herohead{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .muted{color:var(--mut);font-size:.8rem}
 .share{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:.85rem;padding:7px 13px;flex:0 0 auto;border-radius:99px;border:0;background:var(--acc);color:#fff;cursor:pointer}
@@ -112,21 +118,34 @@ footer a{color:inherit}
 </head>
 <body>
 <div class="band"><header>
-    <div class="brand"><i></i>Strength Percentile</div>
-    <div class="tag">Powerlifting percentiles · raw · drug-tested · at your bodyweight</div>
+    <div class="brand">Strength <b>Percentile</b></div>
+    <div class="tag">Powerlifting &amp; weightlifting percentiles · at your bodyweight</div>
   </header></div>
 <div class="wrap">
 
   <div class="grid">
     <section class="card inputs" aria-label="Your numbers">
-      <div class="seg" id="sex"><button data-v="M" class="on">Men</button><button data-v="F">Women</button></div>
-      <div class="seg" id="unit"><button data-v="kg" class="on">kg</button><button data-v="lb">lb</button></div>
-      <div class="field"><label for="bw">Bodyweight</label><div class="in"><input id="bw" type="number" inputmode="decimal" min="0" step="0.1" placeholder="83"><span class="u"></span></div></div>
-      <div class="field"><label for="age">Age<small>optional</small></label><div class="in"><input id="age" type="number" inputmode="numeric" min="0" step="1" placeholder="–"><span>yrs</span></div></div>
-      <div class="field"><label for="squat">Squat</label><div class="in"><input id="squat" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
-      <div class="field"><label for="bench">Bench</label><div class="in"><input id="bench" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
-      <div class="field"><label for="deadlift">Deadlift</label><div class="in"><input id="deadlift" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
-      <div class="field"><label for="total">Total<small id="totnote">sum of your three lifts</small></label><div class="in"><input id="total" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></div>
+      <div class="seg sport" id="sport"><button data-v="pl" class="on">Powerlifting</button><button data-v="wl">Weightlifting</button></div>
+      <div class="segrow">
+        <div class="seg" id="sex"><button data-v="M" class="on">Men</button><button data-v="F">Women</button></div>
+        <div class="seg" id="unit"><button data-v="kg" class="on">kg</button><button data-v="lb">lb</button></div>
+      </div>
+      <div class="cols c2">
+        <label class="f"><span>Bodyweight</span><div class="in"><input id="bw" type="number" inputmode="decimal" min="0" step="0.1" placeholder="83"><span class="u"></span></div></label>
+        <label class="f" id="ageField"><span>Age <small>optional</small></span><div class="in"><input id="age" type="number" inputmode="numeric" min="0" step="1" placeholder="–"><span>yrs</span></div></label>
+      </div>
+      <div class="cols c3" id="liftInputs">
+        <label class="f"><span>Squat</span><div class="in"><input id="squat" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+        <label class="f"><span>Bench</span><div class="in"><input id="bench" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+        <label class="f"><span>Deadlift</span><div class="in"><input id="deadlift" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+      </div>
+      <div class="cols c2" id="wlInputs" hidden>
+        <label class="f"><span>Snatch</span><div class="in"><input id="snatch" type="number" inputmode="decimal" min="0" step="1"><span class="u"></span></div></label>
+        <label class="f"><span>Clean &amp; jerk</span><div class="in"><input id="cleanjerk" type="number" inputmode="decimal" min="0" step="1"><span class="u"></span></div></label>
+      </div>
+      <div class="cols c1">
+        <label class="f tot"><span>Total <small id="totnote">sum of your three lifts</small></span><div class="in"><input id="total" type="number" inputmode="decimal" min="0" step="2.5"><span class="u"></span></div></label>
+      </div>
     </section>
 
     <section class="card" aria-live="polite">
@@ -135,7 +154,7 @@ footer a{color:inherit}
         <div class="big"><b id="bigN">–</b><sup id="bigS"></sup></div>
         <p class="line" id="line">Enter your bodyweight and lifts.</p>
         <div class="meta"><div class="seg small" id="cmp" hidden><button data-v="age" class="on" id="cmpAge">Age group</button><button data-v="all">All ages</button></div><div class="scores" id="scores"></div></div>
-        <div class="tabs" id="tabs"><button data-v="total" class="on">Total</button><button data-v="squat">Squat</button><button data-v="bench">Bench</button><button data-v="deadlift">Deadlift</button></div>
+        <div class="tabs" id="tabs"></div>
       </div>
       <div class="chart"><svg id="chart" viewBox="0 0 640 250" role="img" aria-label="Distribution of lifts at your bodyweight"></svg></div>
       <div class="who" id="who"></div>
@@ -152,25 +171,30 @@ footer a{color:inherit}
 wᵢ = exp(−½ · ((ln bwᵢ − ln b) / 0.035)²)</code>
     <p>The weight is a bell curve on <i>log</i> bodyweight, about ±3.5% wide, so "near" scales with you (±2 kg at 60 kg, ±4 kg at 120 kg) and there are no weight-class jumps. Where data is thin, the window widens until at least 1,500 lifters effectively count. Lifts tied with yours count half. Tested against held-out lifters, the predicted percentiles come true to within about one point.</p>
     <p><b>Age groups:</b> enter your age to compare only with lifters aged 16–23, 24–39, 40–49, 50–59 or 60+ (using their best result <i>within</i> that age range). Smaller groups (e.g. women 60+) need a wider bodyweight window. <b>DOTS</b> and <b>IPF GL</b> are the standard bodyweight-adjusted scores, computed exactly as OpenPowerlifting does.</p>
+    <p><b>Weightlifting</b> uses the same method on <a href="https://www.openweightlifting.org">OpenWeightlifting</a> results (USA, British, Australian, French, Norwegian, Swiss, Irish and IWF meets): about 57,000 men and 46,000 women, youth categories left out, best snatch, clean &amp; jerk and total per lifter. There's no age information in that data, so no age groups there.</p>
     <p>This ranks you among <i>people who compete</i>, a strong crowd. Among gym-goers in general you'd rank higher. Past the 99.99th percentile there are only a handful of people, so the page stops there.</p>
   </details>
-  <footer>Data: <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> (public domain), meets through <span id="snap">2026</span>. Not affiliated with OpenPowerlifting. · <a href="https://github.com/tinker-pbj/powerlifting-percentile">Source</a></footer>
+  <footer>Data: <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> and <a href="https://www.openweightlifting.org">OpenWeightlifting</a> (both public domain), meets through <span id="snap">2026</span>. Not affiliated with either. · <a href="https://github.com/tinker-pbj/powerlifting-percentile">Source</a></footer>
 </div>
 <div class="toast" id="toast">Link copied</div>
 
 <script>
-const LB = 0.45359237, LIFTS = ['total','squat','bench','deadlift'], NAMES = {total:'Total',squat:'Squat',bench:'Bench',deadlift:'Deadlift'};
+const LB = 0.45359237, NAMES = {total:'Total',squat:'Squat',bench:'Bench',deadlift:'Deadlift',snatch:'Snatch',cleanjerk:'Clean & jerk'};
+const SPORT = { pl: { lifts: ['total','squat','bench','deadlift'], parts: ['squat','bench','deadlift'], step: [2.5, 5], noun: 'powerlifting' },
+                wl: { lifts: ['total','snatch','cleanjerk'], parts: ['snatch','cleanjerk'], step: [1, 2], noun: 'weightlifting' } };
+const ALL_INPUTS = ['bw','age','squat','bench','deadlift','snatch','cleanjerk','total'];
+let sport = 'pl', LIFTS = SPORT.pl.lifts;
 const MILESTONES = [25, 50, 75, 90, 95, 99, 99.9, 99.99];
 let D = null, sex = 'M', unit = 'kg', tab = 'total', cmpAll = false;
 const DATA = {}, GROUPS = [['jr', 16, 23], ['open', 24, 39], ['m40', 40, 49], ['m50', 50, 59], ['m60', 60, 200]];
 const ageGroup = (a) => { if (!a || a < 16) return null; const g = GROUPS.find(([, lo, hi]) => a >= lo && a <= hi); return g ? g[0] : null; };
-function groupKey() { const g = ageGroup(val('age')); return g && !cmpAll ? g : 'all'; }
+function groupKey() { if (sport === 'wl') return 'wl'; const g = ageGroup(val('age')); return g && !cmpAll ? g : 'all'; }
 function load(key) { if (DATA[key]) return Promise.resolve(DATA[key]); if (DATA['_p' + key]) return DATA['_p' + key];
-  return DATA['_p' + key] = fetch(key === 'all' ? 'data.json' : `data-${key}.json`, { cache: 'no-cache' }).then((r) => r.json()).then((d) => (DATA[key] = d)); }
+  return DATA['_p' + key] = fetch(key === 'all' ? 'data.json' : key === 'wl' ? 'wl/data.json' : `data-${key}.json`, { cache: 'no-cache' }).then((r) => r.json()).then((d) => (DATA[key] = d)); }
 const $ = (id) => document.getElementById(id);
 const val = (id) => { const v = parseFloat($(id).value); return isFinite(v) && v > 0 ? v : null; };
 const toKg = (v) => unit === 'kg' ? v : v * LB, fromKg = (v) => unit === 'kg' ? v : v / LB;
-const stepU = () => unit === 'kg' ? 2.5 : 5;
+const stepU = () => SPORT[sport].step[unit === 'kg' ? 0 : 1];
 
 const DATA_LABEL = { jr: '16–23', open: '24–39', m40: '40–49', m50: '50–59', m60: '60+' };
 // DOTS and IPF GL (Classic) points, as OpenPowerlifting computes them
@@ -211,17 +235,18 @@ function seg(id, set) { $(id).addEventListener('click', (e) => { const b = e.tar
   [...$(id).children].forEach((c) => c.classList.toggle('on', c === b)); set(b.dataset.v); persist(); render(); }); }
 seg('sex', (v) => sex = v);
 seg('unit', (v) => { if (v === unit) return; const f = v === 'lb' ? 1 / LB : LB; unit = v;
-  ['bw','squat','bench','deadlift','total'].forEach((id) => { const x = val(id); if (x) $(id).value = +(x * f).toFixed(1); }); });
+  ALL_INPUTS.filter((id) => id !== 'age').forEach((id) => { const x = val(id); if (x) $(id).value = +(x * f).toFixed(1); }); });
+seg('sport', (v) => { sport = v; LIFTS = SPORT[v].lifts; tab = 'total'; totalManual = false; buildTabs(); });
 seg('tabs', (v) => tab = v);
 seg('cmp', (v) => cmpAll = v === 'all');
 let totalManual = false;
-['bw','age','squat','bench','deadlift','total'].forEach((id) => $(id).addEventListener('input', () => {
+ALL_INPUTS.forEach((id) => $(id).addEventListener('input', () => {
   if (id === 'total') totalManual = $('total').value !== ''; persist(); render(); }));
 $('lifts').addEventListener('click', (e) => { const r = e.target.closest('.lift'); if (!r) return; tab = r.dataset.v;
   [...$('tabs').children].forEach((c) => c.classList.toggle('on', c.dataset.v === tab)); render(); });
 $('share').addEventListener('click', async () => { persist(); const url = location.href;
   const r = val('bw') && val('total') && D ? pAt(curve('total', toKg(val('bw'))), toKg(val('total'))) : null;
-  const text = r != null ? `My powerlifting total is in the ${fmtP(r).n} percentile of raw, tested lifters at my bodyweight.` : 'How strong are you for your bodyweight?';
+  const text = r != null ? `My ${SPORT[sport].noun} total is in the ${fmtP(r).n} percentile ${sport === 'pl' ? 'of raw, tested lifters' : 'of competitive weightlifters'} at my bodyweight.` : 'How strong are you for your bodyweight?';
   if (navigator.share && matchMedia('(pointer:coarse)').matches) { try { await navigator.share({ title: 'Strength Percentile', text, url }); return; } catch {} }
   try { await navigator.clipboard.writeText(url); } catch {}
   const t = $('toast'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1400); });
@@ -229,11 +254,13 @@ $('share').addEventListener('click', async () => { persist(); const url = locati
 function render() {
   const gk = groupKey(); if (!DATA[gk]) { load(gk).then(render); if (!D) return; } else D = DATA[gk];
   if (!D) return;
-  const ag = ageGroup(val('age')); $('cmp').hidden = !ag; if (ag) $('cmpAge').textContent = 'Age ' + DATA_LABEL[ag];
+  $('ageField').parentElement.className = 'cols ' + (sport === 'pl' ? 'c2' : 'c1');
+  $('wlInputs').hidden = sport !== 'wl'; $('liftInputs').hidden = sport !== 'pl'; $('ageField').hidden = sport !== 'pl';
+  const ag = sport === 'pl' && ageGroup(val('age')); $('cmp').hidden = !ag; if (ag) $('cmpAge').textContent = 'Age ' + DATA_LABEL[ag];
   const who = (sex === 'M' ? 'men' : 'women') + (D.meta.group !== 'all' ? ` aged ${D.meta.group_label}` : '');
   document.querySelectorAll('.u').forEach((s) => s.textContent = unit);
-  if (!totalManual) { const s = val('squat'), b = val('bench'), d = val('deadlift'); $('total').value = s && b && d ? +(s + b + d).toFixed(1) : ''; }
-  $('totnote').textContent = totalManual ? 'entered by you' : 'sum of your three lifts';
+  if (!totalManual) { const v = SPORT[sport].parts.map(val); $('total').value = v.every(Boolean) ? +v.reduce((a, b) => a + b, 0).toFixed(1) : ''; }
+  $('totnote').textContent = totalManual ? 'entered by you' : sport === 'pl' ? 'sum of your three lifts' : 'snatch + clean & jerk';
   const bwU = val('bw'), bwRaw = bwU && toKg(bwU), S = D.data[sex];
   const bwMax = S.bw0 * Math.exp(D.meta.bw_step_log * (S.nbw - 1));
   const bw = bwRaw && Math.min(Math.max(bwRaw, S.bw0), bwMax), clamped = bwRaw && bw !== bwRaw;
@@ -242,11 +269,11 @@ function render() {
   // hero
   const h = res[tab]; $('kicker').textContent = NAMES[tab] + (bwRaw ? ` · ${fmtW(bwRaw)} ${unit} bodyweight` : '');
   if (h) { const f = fmtP(h.p); $('bigN').textContent = f.n; $('bigS').textContent = 'percentile';
-    $('line').innerHTML = `${tab === 'total' ? 'Your total' : 'Your ' + tab} beats <em>${h.p >= 99.995 ? 'more than 99.99' : h.p < 0.1 ? 'fewer than 0.1' : f.n}%</em> of raw, tested ${who} who compete at your bodyweight: ${topPct(h.p)}.`; }
+    $('line').innerHTML = `${tab === 'total' ? 'Your total' : 'Your ' + NAMES[tab].toLowerCase()} beats <em>${h.p >= 99.995 ? 'more than 99.99' : h.p < 0.1 ? 'fewer than 0.1' : f.n}%</em> of ${sport === 'pl' ? 'raw, tested ' + who + ' who compete' : who + ' in competitive weightlifting'} at your bodyweight: ${topPct(h.p)}.`; }
   else { $('bigN').textContent = '–'; $('bigS').textContent = '';
-    $('line').textContent = !bw ? 'Enter your bodyweight and lifts.' : `Enter your ${tab === 'total' ? 'three lifts (or a total)' : tab} to see where you stand.`; }
+    $('line').textContent = !bw ? 'Enter your bodyweight and lifts.' : `Enter your ${tab === 'total' ? (sport === 'pl' ? 'three lifts' : 'snatch and clean & jerk') + ' (or a total)' : NAMES[tab].toLowerCase()} to see where you stand.`; }
   const tot = val('total'), sc = $('scores');
-  if (bwRaw && tot) { const t = toKg(tot), b = bwRaw;
+  if (sport === 'pl' && bwRaw && tot) { const t = toKg(tot), b = bwRaw;
     sc.innerHTML = `<span><i>DOTS</i>${dots(sex, b, t).toFixed(1)}</span><span><i>IPF GL</i>${gl(sex, b, t).toFixed(1)}</span>`; } else sc.innerHTML = '';
   drawChart(bw, res[tab], tab);
   drawWho(bw, tab, clamped);
@@ -320,9 +347,11 @@ function drawWho(bw, lift, clamped) {
 // ---- state in the URL (shareable) and localStorage
 function persist() {
   const q = new URLSearchParams(); q.set('s', sex); q.set('u', unit);
-  for (const k of ['bw','squat','bench','deadlift']) if (val(k)) q.set(k === 'bw' ? 'bw' : k.slice(0, 2), $(k).value);
+  if (sport === 'wl') q.set('sp', 'wl');
+  const KEYS = { bw: 'bw', squat: 'sq', bench: 'be', deadlift: 'de', snatch: 'sn', cleanjerk: 'cj' };
+  for (const k of ['bw', ...SPORT[sport].parts]) if (val(k)) q.set(KEYS[k], $(k).value);
   if (totalManual && val('total')) q.set('t', $('total').value);
-  if (val('age')) q.set('a', $('age').value); if (cmpAll && val('age')) q.set('c', 'all');
+  if (sport === 'pl' && val('age')) q.set('a', $('age').value); if (cmpAll && val('age')) q.set('c', 'all');
   history.replaceState(null, '', '?' + q.toString());
   try { localStorage.plpct2 = q.toString(); } catch {}
 }
@@ -331,12 +360,14 @@ function restore() {
   if (q.get('s') === 'F') sex = 'F'; if (q.get('u') === 'lb') unit = 'lb';
   [...$('sex').children].forEach((c) => c.classList.toggle('on', c.dataset.v === sex));
   [...$('unit').children].forEach((c) => c.classList.toggle('on', c.dataset.v === unit));
-  const map = { bw: 'bw', sq: 'squat', be: 'bench', de: 'deadlift' };
+  if (q.get('sp') === 'wl') { sport = 'wl'; LIFTS = SPORT.wl.lifts; [...$('sport').children].forEach((c) => c.classList.toggle('on', c.dataset.v === 'wl')); }
+  const map = { bw: 'bw', sq: 'squat', be: 'bench', de: 'deadlift', sn: 'snatch', cj: 'cleanjerk' };
   for (const [k, id] of Object.entries(map)) if (q.get(k)) $(id).value = q.get(k);
   if (q.get('t')) { $('total').value = q.get('t'); totalManual = true; }
   if (q.get('a')) $('age').value = q.get('a'); if (q.get('c') === 'all') { cmpAll = true; [...$('cmp').children].forEach((c) => c.classList.toggle('on', c.dataset.v === 'all')); }
 }
-restore(); render();
+function buildTabs() { $('tabs').innerHTML = LIFTS.map((l) => `<button data-v="${l}"${l === tab ? ' class="on"' : ''}>${NAMES[l]}</button>`).join(''); }
+restore(); buildTabs(); render();
 load('all').then((d) => { if (!D) D = d;
   $('nM').textContent = (Math.round(d.meta.lifters.M_total / 1000) * 1000).toLocaleString();
   $('nF').textContent = (Math.round(d.meta.lifters.F_total / 1000) * 1000).toLocaleString();

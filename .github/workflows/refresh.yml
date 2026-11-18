@@ -17,6 +17,12 @@ jobs:
           curl -fsSL -o opl.zip https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip
           unzip -q opl.zip && mv openpowerlifting-*/openpowerlifting-*.csv opl.csv
       - run: python build.py opl.csv
+      - name: Download OpenWeightlifting
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/euanwm/OpenWeightlifting.git owl
+          git -C owl sparse-checkout set event_data
+          python owl_normalize.py owl/event_data owl.csv
+      - run: python build_wl.py owl.csv
       - name: Sanity check
         run: |
           python - <<'PY'
@@ -29,4 +35,4 @@ jobs:
         run: |
           git diff --quiet docs/ && { echo "no change"; exit 0; }
           git config user.name "Tinker (bot)"; git config user.email "tinker@prestonbjensen.com"
-          git add docs/data*.json docs/share && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push
+          git add docs/data*.json docs/wl docs/share && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push

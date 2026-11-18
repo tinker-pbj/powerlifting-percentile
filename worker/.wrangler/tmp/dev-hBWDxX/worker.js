@@ -37,28 +37,29 @@ async function describe(q, origin) {
   }, "num");
   const toKg = /* @__PURE__ */ __name((v) => unit === "kg" ? v : v * LB, "toKg");
   const bwU = num("bw");
-  const sq = num("sq"), be = num("be"), de = num("de");
-  const totU = num("t") ?? (sq && be && de ? sq + be + de : null);
+  const wl = q.get("sp") === "wl";
+  const parts = (wl ? ["sn", "cj"] : ["sq", "be", "de"]).map(num);
+  const totU = num("t") ?? (parts.every(Boolean) ? parts.reduce((a, b) => a + b, 0) : null);
   if (!bwU || !totU) return null;
   const age = num("a");
-  const g = age && q.get("c") !== "all" ? GROUPS.find(([, lo, hi]) => age >= lo && age <= hi) : null;
-  const file = `/share/${g ? g[0] : "all"}-${sex}.json`;
+  const g = !wl && age && q.get("c") !== "all" ? GROUPS.find(([, lo, hi]) => age >= lo && age <= hi) : null;
+  const file = wl ? `/share/wl-all-${sex}.json` : `/share/${g ? g[0] : "all"}-${sex}.json`;
   const r = await fetch(origin + file, { cf: { cacheTtl: 3600, cacheEverything: true } });
   if (!r.ok) return null;
   const D = await r.json();
   const p = percentile(D, sex, toKg(bwU), Math.round(toKg(totU) * 10) / 10);
-  const who = (sex === "M" ? "men" : "women") + (g ? ` aged ${g[3]}` : "");
+  const who = wl ? (sex === "M" ? "male" : "female") + " weightlifters" : "raw, drug-tested " + (sex === "M" ? "men" : "women") + (g ? ` aged ${g[3]}` : "");
   const fmt = /* @__PURE__ */ __name((v) => Math.round(v * 10) / 10, "fmt");
   const pct = p >= 99.995 ? "more than 99.99" : p >= 99 ? p.toFixed(2) : p.toFixed(1);
   const t = 100 - p;
   let image = SITE + "/og.png", top = null;
   if (t <= 50) {
     top = t >= 1 ? String(Math.min(50, Math.ceil(t - 1e-9))) : t >= 0.9 ? "1" : String(Math.max(1, Math.ceil(t * 10 - 1e-9)) / 10);
-    image = `${SITE}/og/${sex}/top-${top}.png`;
+    image = `${SITE}/og/${wl ? "wl/" : ""}${sex}/top-${top}.png`;
   }
   return {
     title: top ? `Top ${top}% for my bodyweight \xB7 Strength Percentile` : "How strong am I for my bodyweight? \xB7 Strength Percentile",
-    description: `${fmt(totU).toLocaleString("en-US")} ${unit} total at ${fmt(bwU)} ${unit} bodyweight: stronger than ${pct}% of raw, drug-tested ${who}. How strong are you?`,
+    description: `${fmt(totU).toLocaleString("en-US")} ${unit} ${wl ? "weightlifting " : ""}total at ${fmt(bwU)} ${unit} bodyweight: stronger than ${pct}% of ${who}. How strong are you?`,
     image
   };
 }

@@ -17,8 +17,7 @@ def card(label, sub, p):
 <line x1="{cx:.1f}" x2="{cx:.1f}" y1="{cy - 70:.1f}" y2="500" stroke="#fff" stroke-width="4"/>
 <circle cx="{cx:.1f}" cy="{cy:.1f}" r="11" fill="#e10b0b" stroke="#fff" stroke-width="5"/>
 <text x="{cx:.1f}" y="{cy - 84:.1f}" text-anchor="middle" font-family="Inter" font-weight="800" font-size="30" fill="#fff">ME</text>
-<rect x="64" y="64" width="44" height="44" rx="10" fill="#e10b0b"/><rect x="73" y="78" width="7" height="16" rx="1.5" fill="#fff"/><rect x="92" y="78" width="7" height="16" rx="1.5" fill="#fff"/><rect x="80" y="84" width="12" height="4" fill="#fff"/>
-<text x="124" y="98" font-family="Inter" font-weight="800" font-size="30" letter-spacing="2" fill="#fff">STRENGTH PERCENTILE</text>
+<text x="64" y="100" font-family="Inter" font-weight="900" font-size="32" letter-spacing="3" fill="#fff">STRENGTH <tspan fill="#e10b0b">PERCENTILE</tspan></text>
 <text x="60" y="{250 + size * .55:.0f}" font-family="Inter Display" font-weight="900" font-size="{size}" fill="#e10b0b" letter-spacing="-4">{label}</text>
 <text x="64" y="430" font-family="Inter" font-weight="700" font-size="34" fill="#fff">{sub[0]}</text>
 <text x="64" y="474" font-family="Inter" font-weight="700" font-size="34" fill="#fff">{sub[1]}</text>
@@ -36,11 +35,13 @@ def erfinv(y):  # Giles' approximation, plenty for placing a dot
     return p * y
 
 tops = [n for n in range(1, 51)] + [n / 10 for n in range(1, 10)]
-for sex, who in [('M', 'men'), ('F', 'women')]:
-    os.makedirs(f'docs/og/{sex}', exist_ok=True)
-    for t in tops:
-        name = f'{t:g}'
-        svg = card(f'TOP {name}%', ('stronger than', f'{100 - t:g}% of raw, tested {who}' if t >= 1 else f'{100 - t:.1f}% of raw, tested {who}'), 100 - t)
-        svg = svg.replace('stronger than</text>', 'for my bodyweight, stronger than</text>')
-        subprocess.run(['rsvg-convert', '-o', f'docs/og/{sex}/top-{name}.png'], input=svg.encode(), check=True)
+for sport, folder in [('pl', 'docs/og'), ('wl', 'docs/og/wl')]:
+    for sex, who in [('M', 'men'), ('F', 'women')]:
+        os.makedirs(f'{folder}/{sex}', exist_ok=True)
+        group = f'raw, tested {who}' if sport == 'pl' else ('male' if sex == 'M' else 'female') + ' weightlifters'
+        for t in tops:
+            name = f'{t:g}'
+            pct = f'{100 - t:g}' if t >= 1 else f'{100 - t:.1f}'
+            svg = card(f'TOP {name}%', ('for my bodyweight, stronger than', f'{pct}% of {group}'), 100 - t)
+            subprocess.run(['rsvg-convert', '-o', f'{folder}/{sex}/top-{name}.png'], input=svg.encode(), check=True)
 print('ok')
