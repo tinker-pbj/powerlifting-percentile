@@ -63,7 +63,7 @@ def page(title, desc, path, body):
 <footer>Data: <a href="https://www.openpowerlifting.org">OpenPowerlifting</a> and <a href="https://www.openweightlifting.org">OpenWeightlifting</a> (public domain), refreshed weekly. Not affiliated with either. · <a href="/standards/">All strength standards</a> · <a href="/">Calculator</a></footer>
 </main><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{{"token": "472b7ce3b3a14314816f2c2c47df804c"}}'></script></body></html>"""
 
-def cls_label(c): return f'{c}+ kg' if isinstance(c, str) else f'{c} kg'
+def cls_label(c): return f'{c} kg' 
 def cls_slug(c): return f'{c.rstrip("+")}plus-kg' if isinstance(c, str) else f'{c}kg'
 
 urls = [('/', '1.0'), ('/standards/', '0.9')]
