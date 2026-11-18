@@ -37,3 +37,14 @@ jobs:
           git diff --quiet docs/ && { echo "no change"; exit 0; }
           git config user.name "Tinker (bot)"; git config user.email "tinker@prestonbjensen.com"
           git add docs/data*.json docs/wl docs/standards docs/sitemap.xml && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push
+      - name: Ping IndexNow (Bing, Yandex, ...)
+        run: |
+          python - <<'PY'
+          import json, re, urllib.request
+          key = open('.indexnow-key').read().strip()
+          urls = re.findall(r'<loc>([^<]+)</loc>', open('docs/sitemap.xml').read())
+          body = json.dumps({"host": "strengthpercentile.com", "key": key, "keyLocation": f"https://strengthpercentile.com/{key}.txt", "urlList": urls}).encode()
+          req = urllib.request.Request('https://api.indexnow.org/indexnow', data=body, headers={'content-type': 'application/json; charset=utf-8'})
+          try: print(urllib.request.urlopen(req).status)
+          except Exception as e: print('indexnow:', e)
+          PY
