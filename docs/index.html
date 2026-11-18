@@ -247,6 +247,7 @@ $('lifts').addEventListener('click', (e) => { const r = e.target.closest('.lift'
 $('share').addEventListener('click', async () => { persist(); const url = location.href;
   const r = val('bw') && val('total') && D ? pAt(curve('total', toKg(val('bw'))), toKg(val('total'))) : null;
   const text = r != null ? `My ${SPORT[sport].noun} total is in the ${fmtP(r).n} percentile ${sport === 'pl' ? 'of raw, tested lifters' : 'of competitive weightlifters'} at my bodyweight.` : 'How strong are you for your bodyweight?';
+  if (r != null) setPreview(r);   // Safari builds the iMessage preview from this page's tags, not by re-fetching the link
   if (navigator.share && matchMedia('(pointer:coarse)').matches) { try { await navigator.share({ title: 'Strength Percentile', text, url }); return; } catch {} }
   try { await navigator.clipboard.writeText(url); } catch {}
   const t = $('toast'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1400); });
@@ -342,6 +343,21 @@ function drawWho(bw, lift, clamped) {
   $('who').innerHTML = `<svg viewBox="0 0 112 50" aria-hidden="true"><path d="${p}L108,36L4,36Z" fill="var(--accfill)"/><path d="${p}" fill="none" stroke="var(--acc)" stroke-width="1.6"/><line x1="56" x2="56" y1="6" y2="36" stroke="var(--acc)" stroke-width="1.2" stroke-dasharray="2 2"/>
     <text x="${xl}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(lo)}</text><text x="56" y="47" text-anchor="middle" class="axis" style="font-size:9px;font-weight:700">${r(bw)}</text><text x="${xh}" y="47" text-anchor="middle" class="axis" style="font-size:9px">${r(hi)}</text></svg>
     <span>Compared with <b>${near.toLocaleString()} ${sex === 'M' ? 'men' : 'women'}${D.meta.group !== 'all' ? ' aged ' + D.meta.group_label : ''}</b> who weighed <b>${r(lo)}–${r(hi)} ${unit}</b>. ${clamped ? `Very few lifters weigh what you entered, so this uses the nearest group with enough data (${r(bw)} ${unit}).` : `The closer someone was to your ${r(bw)} ${unit}, the more they count.`}</span>`;
+}
+
+// Same card the share-preview Worker picks, so a preview made from this page matches one made by fetching the link.
+function setPreview(p) {
+  const SITE = 'https://strengthpercentile.com', t = 100 - p, sx = sex;
+  let top = null, image = SITE + '/og.png';
+  if (t <= 50) { top = t >= 1 ? String(Math.min(50, Math.ceil(t - 1e-9))) : t >= 0.9 ? '1' : String(Math.max(1, Math.ceil(t * 10 - 1e-9)) / 10);
+    image = `${SITE}/og/${sport === 'wl' ? 'wl/' : ''}${sx}/top-${top}.png`; }
+  const pct = p >= 99.995 ? 'more than 99.99' : p >= 99 ? p.toFixed(2) : p.toFixed(1);
+  const who = sport === 'wl' ? (sx === 'M' ? 'male' : 'female') + ' weightlifters' : 'raw, drug-tested ' + (sx === 'M' ? 'men' : 'women') + (D.meta.group !== 'all' ? ' aged ' + D.meta.group_label : '');
+  const title = top ? `Top ${top}% for my bodyweight · Strength Percentile` : 'How strong am I for my bodyweight? · Strength Percentile';
+  const desc = `${(+$('total').value).toLocaleString()} ${unit} ${sport === 'wl' ? 'weightlifting ' : ''}total at ${$('bw').value} ${unit} bodyweight: stronger than ${pct}% of ${who}. How strong are you?`;
+  const set = (sel, v) => { const m = document.querySelector(sel); if (m) m.setAttribute('content', v); };
+  set('meta[property="og:title"]', title); set('meta[property="og:description"]', desc); set('meta[name="description"]', desc);
+  set('meta[property="og:image"]', image); set('meta[property="og:url"]', location.href); document.title = title;
 }
 
 // ---- state in the URL (shareable) and localStorage
