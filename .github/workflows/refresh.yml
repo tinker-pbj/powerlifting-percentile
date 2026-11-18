@@ -29,4 +29,4 @@ jobs:
         run: |
           git diff --quiet docs/ && { echo "no change"; exit 0; }
           git config user.name "Tinker (bot)"; git config user.email "tinker@prestonbjensen.com"
-          git add docs/data*.json && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push
+          git add docs/data*.json docs/share && git commit -m "Data refresh: $(python -c "import json;print(json.load(open('docs/data.json'))['meta']['latest_meet'])")" && git push

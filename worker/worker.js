@@ -53,7 +53,7 @@ async function describe(q, origin) {
 
   const age = num('a');
   const g = age && q.get('c') !== 'all' ? GROUPS.find(([, lo, hi]) => age >= lo && age <= hi) : null;
-  const file = g ? `/data-${g[0]}.json` : '/data.json';
+  const file = `/share/${g ? g[0] : 'all'}-${sex}.json`;   // slim: totals for one sex only
   const r = await fetch(origin + file, { cf: { cacheTtl: 3600, cacheEverything: true } });
   if (!r.ok) return null;
   const D = await r.json();

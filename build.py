@@ -13,7 +13,7 @@ linearly in lift and in log bodyweight.
 
 Usage: python build.py path/to/openpowerlifting.csv
 """
-import duckdb, numpy as np, json, sys, math
+import duckdb, numpy as np, json, sys, math, os
 
 CSV = sys.argv[1] if len(sys.argv) > 1 else 'opl.csv'
 H, MIN_EFF, STEP, BW_STEP = 0.035, 1500, 2.5, 0.015
@@ -78,3 +78,10 @@ for gkey, (glabel, amin, amax) in GROUPS.items():
             print(gkey, sex, lift, len(x), "grid", g0, g1, len(grid), "min_eff", min_eff, file=sys.stderr)
 
     json.dump(out, open('docs/data.json' if gkey == 'all' else f'docs/data-{gkey}.json', 'w'), separators=(',', ':'))
+    # slim per-sex totals for the share-preview Worker (it has a tight CPU budget)
+    os.makedirs('docs/share', exist_ok=True)
+    for sex, S in out["data"].items():
+        T = S["lifts"]["total"]
+        slim = {"meta": {"bw_step_log": BW_STEP, "lift_step": STEP},
+                "data": {sex: {"bw0": S["bw0"], "nbw": S["nbw"], "lifts": {"total": {"x0": T["x0"], "n": T["n"], "rows": T["rows"]}}}}}
+        json.dump(slim, open(f'docs/share/{gkey}-{sex}.json', 'w'), separators=(',', ':'))
